@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ASphereGrid.h"
+#include "ASphereGridTile.h"
 
 #include "ProceduralMeshComponent.h"
 
 #include <cmath>
 
 // Sets default values
-AASphereGrid::AASphereGrid()
+ASphereGridTile::ASphereGridTile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -17,7 +17,7 @@ AASphereGrid::AASphereGrid()
 
 }
 /*
-void AASphereGrid::Destroyed()
+void ASphereGridTile::Destroyed()
 {
 	if (IsValid(UProceduralMeshComponent))
 	{
@@ -31,7 +31,7 @@ void AASphereGrid::Destroyed()
 */
 
 // Called when the game starts or when spawned
-void AASphereGrid::BeginPlay()
+void ASphereGridTile::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -47,46 +47,50 @@ void AASphereGrid::BeginPlay()
 	FHexGridRenderData data;
 
 	if(id == 0)
-		data = generatorMesh->generateHexagon(1, 0, 1);
+		data = generatorMesh->generateHexagon(1, 0, 0);
 	if(id == 1)
-		data = generatorMesh->generateHexagon(1, 1, 2);
+		data = generatorMesh->generateHexagon(1, 1, 0);
 	if (id == 2)
-		data = generatorMesh->generateHexagon(1, 1, 2);
+		data = generatorMesh->generateHexagon(1, 0, 1);
 	if (id == 3)
+		data = generatorMesh->generateHexagon(1, 1, 1);
+	if (id == 4)
 		data = generatorMesh->generateHexagon(1, 1, 2);
+	if (id == 5)
+		data = generatorMesh->generateHexagon(1, 2, 1);
+	if (id == 6)
+		data = generatorMesh->generateHexagon(1, 2, 2);
 
-	this->vertices = data.Vertices;
-	this->triangles = data.Triangles;
 
-	if (id == 1)
+	
+
+	if (id == -1)
 		this->vertices = data.IcosaVertices;
-
-	if (id == 2)
+	else if (id == -2)
 		this->vertices = data.AllChunkVertices;
+	else
+	{
+		this->vertices = data.Vertices;
+		this->triangles = data.Triangles;
+	}
 
 	//if(this->vertices.Num() > 0)
 		//SetActorLocation(this->vertices[0]);
+	SetActorLocation(FVector(0, 0, 0));
+	this->proceduralMesh = NewObject<UProceduralMeshComponent>(this, UProceduralMeshComponent::StaticClass(),
+		"ProceduralMesh");
 
+	if (this->proceduralMesh == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("Error! Can't create subobject!"));
+		return;
+	}
+	this->proceduralMesh->RegisterComponent();
+	this->proceduralMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	this->proceduralMesh->SetFlags(RF_Transactional);
+	this->proceduralMesh->Modify();
 
-	if ((id != 1) && (id != 2)) {
-		SetActorLocation(FVector(0, 0, 0));
-
-		this->proceduralMesh = NewObject<UProceduralMeshComponent>(this, UProceduralMeshComponent::StaticClass(),
-			"ProceduralMesh");
-
-		if (this->proceduralMesh == nullptr) {
-			UE_LOG(LogTemp, Warning, TEXT("Error! Can't create subobject!"));
-			return;
-		}
-
-		this->proceduralMesh->RegisterComponent();
-		this->proceduralMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-
+	if ((id != -1) && (id != -2)) {
 		// Enable editor visibility
-		this->proceduralMesh->SetFlags(RF_Transactional);
-		this->proceduralMesh->Modify();
-	
-	
 		this->proceduralMesh->CreateMeshSection(
 			0,          // Section Index
 			this->vertices, //data.Vertices,   // Vertices
@@ -102,7 +106,7 @@ void AASphereGrid::BeginPlay()
 }
 
 // Called every frame
-void AASphereGrid::Tick(float DeltaTime)
+void ASphereGridTile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

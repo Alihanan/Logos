@@ -7,20 +7,20 @@
 #include "Geometry/SphereIcosaMeshGenerator.h"
 
 #include <cstdint>
-#include "ASphereGrid.generated.h"
+#include "ASphereGridTile.generated.h"
 
 class UProceduralMeshComponent;
 //class SphereIcosaMeshGenerator;
 
 UCLASS()
-class LOGOS_API AASphereGrid : public AActor
+class LOGOS_API ASphereGridTile : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AASphereGrid();
-	~AASphereGrid() {}
+	ASphereGridTile();
+	~ASphereGridTile() {}
 
 protected:
 	// Called when the game starts or when spawned

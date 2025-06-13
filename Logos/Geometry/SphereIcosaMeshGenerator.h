@@ -51,24 +51,24 @@ inline EIcosID iid(int int_id) {
     return EIcosID::ID_EMPTY;
 }
 
-enum EIcosDirection : int
+enum EIcosFaceDirection : int
 {
     DIR_TOP_RIGHT = 0,
     DIR_RIGHT = 1,
-    DIR_DOWN_RIGHT = 2,
+    DIR_DOWN_RIGHT_VDIR_DOWN = 2,
     DIR_DOWN_LEFT = 3,
     DIR_LEFT = 4,
-    DIR_TOP_LEFT = 5,
+    DIR_TOP_LEFT_VDIR_TOP = 5,
 
     TOTAL_DIRECTION_NUMBER = 6
 };
 
 
-static const int icoVertexNeighbors[TOTAL_ICOSAHEDRON_NUMBER][TOTAL_DIRECTION_NUMBER] = {
+static const int icoPentagonNeighbors[EIcosID::TOTAL_ICOSAHEDRON_NUMBER][EIcosFaceDirection::TOTAL_DIRECTION_NUMBER] = {
 
 
            /* T_R   R    D_R   D_L  L  T_L*/
-    /* 0 */ { 2,    1,    5,   4,  -1,   3},
+    /* 0 */ { 2,    1,    5,   -1,  4,   3},
     /* 1 */ { 0,    2,    6,   10,  5,   0},
     /* 2 */ { 0,    3,    7,    6,  1,   0},
     /* 3 */ { 0,    4,    8,    7,  2,   0},
@@ -79,8 +79,51 @@ static const int icoVertexNeighbors[TOTAL_ICOSAHEDRON_NUMBER][TOTAL_DIRECTION_NU
     /* 8 */ { 4,    9,   11,   11,  7,   1},
     /* 9 */ { 5,   10,   11,   11,  8,   1},
     /*10 */ { 1,    6,   11,   11,  9,   1},
-    /*11 */ { 7,   -1,    8,   11, 10,   6}
+    /*11 */ { 6,    7,    8,   -1,  9,  10}
 };
+
+
+
+enum EIcosVertexDirection : int
+{
+    VERT_DIR_X_MINUS = 0,
+    VERT_DIR_Y_PLUS_X0 = 1,
+    VERT_DIR_Y_PLUS_NONZERO = 2,
+    VERT_DIR_DIAG_PLUS = 3,
+    VERT_DIR_X_PLUS_NONZERO = 4,
+    VERT_DIR_X_PLUS_Y0 = 5,
+    VERT_DIR_Y_MINUS = 6,
+    VERT_DIR_DIAG_MINUS = 7,
+
+    TOTAL_VERT_DIRECTION_NUMBER = 8
+};
+
+
+static const int icoVertexNeighbors[EIcosID::TOTAL_ICOSAHEDRON_NUMBER][EIcosVertexDirection::TOTAL_VERT_DIRECTION_NUMBER] = {
+
+
+           /* X-   Y+x0   Y+  DIA+    X+   X+y0     Y-   DIA-*/
+    /* 0 */ { 2,    1,    1,   5,     4,    4,      3,   -1},
+
+
+    /* 1 */ { 5,    0,    2,    2,    6,     6,    10,   -1},
+    /* 2 */ { 1,    0,    3,    3,    7,     7,     6,   -1},
+    /* 3 */ { 2,    0,    4,    4,    8,     8,     7,   -1},
+    /* 4 */ { 3,    0,    5,    5,    9,     9,     8,   -1},
+    /* 5 */ { 4,    0,    1,    1,   10,    10,     9,   -1},
+
+    /* 6 */ { 1,    2,    2,    7,    7,    11,    10,   -1},
+    /* 7 */ { 2,    3,    3,    8,    8,    11,     6,   -1},
+    /* 8 */ { 3,    4,    4,    9,    9,    11,     7,   -1},
+    /* 9 */ { 4,    5,    5,   10,   10,    11,     8,   -1},
+    /*10 */ { 5,    6,    6,    6,    6,    11,     9,   -1},
+
+    /*11 */ { 6,    7,    7,    8,    9,     9,    10,   -1}
+};
+
+
+
+
 
 
 inline static const FVector ALL_COORDINATES[12] = {
@@ -156,21 +199,22 @@ struct FIcosaPentCoord
         return static_cast<EIcosLevel>(ret);
     }
 
-    static EIcosLevel idToLevel(EIcosID id) {
+    static EIcosLevel idToLevel(EIcosID idIn) {
 
-        int ret = static_cast<int>(id);
+        int ret = static_cast<int>(idIn);
 
         ret = (ret + 4) / 5; // 0 -> 0     1-5 -> 1      6-10 -> 2      11 -> 3
 
         return static_cast<EIcosLevel>(ret);
     }
 
-    static int correctID(int id, int level) //, int from_level
+    // TODO remove
+    static int correctID(int idIn, int level) //, int from_level
     {
 
         if ((level == EIcosLevel::L_NORTH_POLE) || (level == EIcosLevel::L_SOUTH_POLE))
         {
-            return (5 * level + 3 - id);
+            return (5 * level + 3 - idIn);
         }
         //if (level == EIcosLevel::L_NORTH_POLE) return static_cast<int>(EIcosID::ID_NORTH_POLE);  // no pentagons at poles
         //if (level == EIcosLevel::L_SOUTH_POLE) return static_cast<int>(EIcosID::ID_SOUTH_POLE);  // no pentagons at poles
@@ -182,13 +226,13 @@ struct FIcosaPentCoord
         // .....
         // 6 -> 1 + 5
         // 5 -> 5 + 5 = 10
-        return (id + 4) % 5 + 1 + 5 * (level - 1);
+        return (idIn + 4) % 5 + 1 + 5 * (level - 1);
     }
 
-    EIcosID upLeft()
+    EIcosID upLeft() const
     {
         int ret_id = static_cast<int>(this->id);
-        return static_cast<EIcosID>(icoVertexNeighbors[ret_id][DIR_TOP_LEFT]);
+        return static_cast<EIcosID>(icoPentagonNeighbors[ret_id][DIR_TOP_LEFT_VDIR_TOP]);
         
         /*int level = idToLevel(this->id);
 
@@ -200,10 +244,10 @@ struct FIcosaPentCoord
         return iid(ret_id);*/
     }
 
-    EIcosID upRight()
+    EIcosID upRight() const
     {
         int ret_id = static_cast<int>(this->id);
-        return static_cast<EIcosID>(icoVertexNeighbors[ret_id][DIR_TOP_RIGHT]);
+        return static_cast<EIcosID>(icoPentagonNeighbors[ret_id][DIR_TOP_RIGHT]);
 
         /*int level = idToLevel(this->id);
         UE_LOG(LogTemp, Warning, TEXT("ret_id: %d | level: %d (input to upRight() )\n"),
@@ -229,10 +273,10 @@ struct FIcosaPentCoord
         return iid(ret_id);*/
     }
 
-    EIcosID downLeft()
+    EIcosID downLeft() const
     {
         int ret_id = static_cast<int>(this->id);
-        return static_cast<EIcosID>(icoVertexNeighbors[ret_id][DIR_DOWN_LEFT]);
+        return static_cast<EIcosID>(icoPentagonNeighbors[ret_id][DIR_DOWN_LEFT]);
 
         /*int level = idToLevel(this->id);
 
@@ -244,10 +288,10 @@ struct FIcosaPentCoord
         return iid(ret_id);*/
     }
 
-    EIcosID downRight()
+    EIcosID downRight() const
     {
         int ret_id = static_cast<int>(this->id);
-        return static_cast<EIcosID>(icoVertexNeighbors[ret_id][DIR_DOWN_RIGHT]);
+        return static_cast<EIcosID>(icoPentagonNeighbors[ret_id][DIR_DOWN_RIGHT_VDIR_DOWN]);
 
         /*int level = idToLevel(this->id);
 
@@ -259,10 +303,10 @@ struct FIcosaPentCoord
         return iid(ret_id);*/
     }
 
-    EIcosID right()
+    EIcosID right() const
     {
         int ret_id = static_cast<int>(this->id);
-        return static_cast<EIcosID>(icoVertexNeighbors[ret_id][DIR_RIGHT]);
+        return static_cast<EIcosID>(icoPentagonNeighbors[ret_id][DIR_RIGHT]);
 
         /*int level = idToLevel(this->id);
 
@@ -284,10 +328,10 @@ struct FIcosaPentCoord
         return iid(ret_id);*/
     }
 
-    EIcosID left()
+    EIcosID left() const
     {
         int ret_id = static_cast<int>(this->id);
-        return static_cast<EIcosID>(icoVertexNeighbors[ret_id][DIR_LEFT]);
+        return static_cast<EIcosID>(icoPentagonNeighbors[ret_id][DIR_LEFT]);
 
         /*int level = idToLevel(this->id);
 
@@ -297,6 +341,144 @@ struct FIcosaPentCoord
         return iid(ret_id);*/
     }
 };
+
+
+
+
+class FIcosaVertexNeighbourEntry
+{
+public:
+    struct FIcoseNeighCoordTransform
+    {
+        // For some reason Unreal does not have any adequate linear algebra libraries, BRUH
+        // Use this for now
+        FVector xMatRow;
+        FVector yMatRow;
+
+        FVector2D transformXY(FVector2D xy) const
+        {
+            return this->transformXY(xy.X, xy.Y);
+        }
+        FVector2D transformXY(double x, double y) const
+        {
+            FVector xy_one = FVector(x, y, 1.0);
+
+            double x_new = this->xMatRow.Dot(xy_one);
+            double y_new = this->yMatRow.Dot(xy_one);
+
+            return FVector2D(x_new, y_new);
+        }
+    };
+    
+    inline static const FIcoseNeighCoordTransform ALL_VERTEX_COORD_TRANSFORM[EIcosID::TOTAL_ICOSAHEDRON_NUMBER] = {
+        {{0, 0, 0}, {0, 0, 0}},    // Pole
+        {{0, 1, -4}, {-1, 0, 4}},  // Up
+        {{1, 0, -4}, {0, 1, 0}},   // Right
+        {{1, 0, 0}, {0, 1, 4}},    // Down
+        {{0, 0, 0}, {0, 0, 0}},    // DownLeft
+        {{0, -1, 3}, {1, 0, 4}},   // Left
+    };
+
+    
+    inline static void correctCoordinate(const FIcosaPentCoord& objIn, EIcosID& neighID, FVector2D& xy, const int N_division) 
+    {
+        EIcosLevel level = FIcosaPentCoord::idToLevel(neighID);
+
+        UE_LOG(LogTemp, Warning, TEXT("correctCoordinate: X: %d, Y: %d, face: %d!\n"),
+            (int)(xy.X), (int)(xy.Y),
+            static_cast<int>(neighID)
+        );
+
+        // TODO convert to lookup
+        EIcosID pole;
+        if (level == EIcosLevel::L_FIRST_RING)
+            pole = objIn.upRight();
+        else 
+            pole = objIn.downRight();
+
+        EIcosID up = objIn.right();
+        
+        EIcosID left = objIn.left();
+
+        EIcosID right;
+        if (level == EIcosLevel::L_FIRST_RING)
+            right = objIn.downRight();
+        else
+            right = objIn.downRight();
+
+        EIcosID down;
+        if (level == EIcosLevel::L_FIRST_RING)
+            down = objIn.downLeft();
+        else
+            down = objIn.upLeft();
+
+
+        // TODO make more beautiful!
+        int X = static_cast<int>(xy.X);
+        int Y = static_cast<int>(xy.Y);
+
+        bool x0 = (X == 0);
+        bool x_minusOne = (X == -1);
+        bool xN = (xy.X == N_division);
+        bool xOther = (!xN) & (!x_minusOne);
+
+        bool y0 = (Y == 0);
+        bool y_minusOne = (Y == -1);
+        bool yN = (Y == N_division);
+        bool yOther = (!y_minusOne) & (!yN);
+
+        if (xOther & yOther) { // Inside, no change
+            UE_LOG(LogTemp, Warning, TEXT("No change in correctCoordinate!\n")
+                );
+            return;
+        } 
+        
+        if (x_minusOne & y_minusOne) { // Pentagon at bottom Left does not have a neighbour
+            UE_LOG(LogTemp, Warning, TEXT("[-1,-1] empty detected in correctCoordinate!\n")
+            );
+            neighID = EIcosID::ID_EMPTY;
+        }
+        else if (x0 & yN) { // Goes to pole
+            neighID = pole;
+            xy = ALL_VERTEX_COORD_TRANSFORM[0].transformXY(xy);
+            UE_LOG(LogTemp, Warning, TEXT("x == 0 and y == N, pole detected!\n")
+            );
+        }
+        else if (yN) {
+            UE_LOG(LogTemp, Warning, TEXT("y == N, up detected! [%d]->[%d]\n"),
+                static_cast<int>(neighID), static_cast<int>(up)
+            );
+            neighID = up;
+            xy = ALL_VERTEX_COORD_TRANSFORM[1].transformXY(xy);
+            
+        }
+        else if (xN) {
+            UE_LOG(LogTemp, Warning, TEXT("x == N, righ detected! [%d]->[%d]\n"),
+                static_cast<int>(neighID), static_cast<int>(right)
+            );
+            neighID = right;
+            xy = ALL_VERTEX_COORD_TRANSFORM[2].transformXY(xy);
+        }
+        else if (y_minusOne) {
+            UE_LOG(LogTemp, Warning, TEXT("y == -1, down detected! [%d]->[%d]\n"),
+                static_cast<int>(neighID), static_cast<int>(down)
+            );
+            neighID = down;
+            xy = ALL_VERTEX_COORD_TRANSFORM[3].transformXY(xy);
+        }
+        else if (x_minusOne) {
+            UE_LOG(LogTemp, Warning, TEXT("x == -1, left detected! [%d]->[%d]\n"),
+                static_cast<int>(neighID), static_cast<int>(left)
+            );
+            neighID = left;
+            xy = ALL_VERTEX_COORD_TRANSFORM[5].transformXY(xy);
+        }
+    }
+
+
+    
+};
+
 
 struct FIcosaPointCoord
 {
@@ -308,7 +490,7 @@ struct FIcosaPointCoord
 
     EIcosID upRight = EIcosID::ID_EMPTY, downRight = EIcosID::ID_EMPTY, right = EIcosID::ID_EMPTY;
 
-    FIcosaPointCoord(EIcosID id, FIntVector2 xy, int N_division) :
+    FIcosaPointCoord(EIcosID id, FVector2D xy, int N_division) :
         coord(FIcosaPentCoord(id)), X(xy.X), Y(xy.Y), N_division(N_division),
         upRight(this->coord.upRight()),
         downRight(this->coord.downRight()),
@@ -316,7 +498,8 @@ struct FIcosaPointCoord
     {
 
         this->N_division = this->N_division * !this->coord.isPole() + this->coord.isPole();
-        this->w_position = (computeCoordinate());
+        if(static_cast<int>(this->coord.id) != -1)
+            this->w_position = (computeCoordinate());
         /*
         UE_LOG(LogTemp, Warning, TEXT("[constructor FIcosaPointCoord] face: %d | Position: %f %f %f | N_division: %d\n"),
             static_cast<int>(id),
@@ -329,8 +512,8 @@ struct FIcosaPointCoord
         */
     }
 
-    FIcosaPointCoord(EIcosID id, int x, int y, int N_division) :
-        FIcosaPointCoord(id, { x, y }, N_division)
+    FIcosaPointCoord(EIcosID idIn, int x, int y, int N_division) :
+        FIcosaPointCoord(idIn, FVector2D(x, y), N_division)
     {
     }
 
@@ -419,7 +602,7 @@ struct FIcosaPoint
         }
     }
 
-    FIcosaPoint(EIcosID id, FIntVector2 xy, int N_division) :
+    FIcosaPoint(EIcosID id, FVector2D xy, int N_division) :
         pointCoord(id, xy, N_division)
     {
         this->hexVertices = new TArray<FVector>;
@@ -430,7 +613,7 @@ struct FIcosaPoint
     }
 
     FIcosaPoint(EIcosID id, int x, int y, int N_division)
-        : FIcosaPoint(id, { x, y }, N_division)
+        : FIcosaPoint(id, FVector2D(x, y), N_division)
     { }
 
     void getNeighbours() {
@@ -502,30 +685,33 @@ struct FIcosaPoint
         int neigh_X = this->pointCoord.X;
         int neigh_Y = this->pointCoord.Y + 1;
         EIcosID neigh_id = this->pointCoord.coord.id;
+        FVector2D neigh_XY = FVector2D(neigh_X, neigh_Y);
 
-        if (this->pointCoord.N_division == neigh_Y) {  // switch
-            EIcosLevel neigh_level = this->pointCoord.coord.id_level;
+        FIcosaVertexNeighbourEntry::correctCoordinate(this->pointCoord.coord, neigh_id, neigh_XY, this->pointCoord.N_division);
 
-            if ((neigh_level == EIcosLevel::L_SECOND_RING)) { // lower ring  (READY)
-                neigh_id = this->pointCoord.coord.upRight();  // just go without any edge case
-                neigh_Y = 0;
-            }
-            else if (neigh_level == EIcosLevel::L_FIRST_RING) { // if first ring (READY)
-                if ((neigh_X == 0)) {  // goes to pole on x=0 axis
-                    neigh_id = this->pointCoord.coord.upRight(); // north pole
-                    neigh_Y = 0;
-                }
-                else { // otherwise OK (READY)
-                    neigh_id = this->pointCoord.coord.right();
-                    neigh_Y = this->pointCoord.N_division - neigh_X;
-                    neigh_X = 0;
-                }
-            }
-            else {  // Poles? Maybe not...
+        //if (this->pointCoord.N_division == neigh_Y) {  // switch
+        //    EIcosLevel neigh_level = this->pointCoord.coord.id_level;
 
-            }
-        }
-        return FIcosaPointCoord(neigh_id, neigh_X, neigh_Y, this->pointCoord.N_division);
+        //    if ((neigh_level == EIcosLevel::L_SECOND_RING)) { // lower ring  (READY)
+        //        neigh_id = this->pointCoord.coord.upRight();  // just go without any edge case
+        //        neigh_Y = 0;
+        //    }
+        //    else if (neigh_level == EIcosLevel::L_FIRST_RING) { // if first ring (READY)
+        //        if ((neigh_X == 0)) {  // goes to pole on x=0 axis
+        //            neigh_id = this->pointCoord.coord.upRight(); // north pole
+        //            neigh_Y = 0;
+        //        }
+        //        else { // otherwise OK (READY)
+        //            neigh_id = this->pointCoord.coord.right();
+        //            neigh_Y = this->pointCoord.N_division - neigh_X;
+        //            neigh_X = 0;
+        //        }
+        //    }
+        //    else {  // Poles? Maybe not...
+
+        //    }
+        //}
+        return FIcosaPointCoord(neigh_id, neigh_XY, this->pointCoord.N_division);
     }
     
     FIcosaPointCoord downNeighbour() {
@@ -533,26 +719,34 @@ struct FIcosaPoint
         int neigh_Y = this->pointCoord.Y - 1;
         EIcosID neigh_id = this->pointCoord.coord.id;
 
-        if (-1 == neigh_Y) {
-            EIcosLevel neigh_level = this->pointCoord.coord.id_level;
-            //neigh_Y = N_division - neigh_X - 1;
-            neigh_Y = 0;
+        FVector2D neigh_XY = FVector2D(neigh_X, neigh_Y);
 
-            if (neigh_level == EIcosLevel::L_FIRST_RING)
-                neigh_id = this->pointCoord.coord.downLeft();
-            if (neigh_level == EIcosLevel::L_SECOND_RING)
-                neigh_id = this->pointCoord.coord.left();
+        FIcosaVertexNeighbourEntry::correctCoordinate(this->pointCoord.coord, neigh_id, neigh_XY, this->pointCoord.N_division);
 
-        }
+        //if (-1 == neigh_Y) {
+        //    EIcosLevel neigh_level = this->pointCoord.coord.id_level;
+        //    //neigh_Y = N_division - neigh_X - 1;
+        //    neigh_Y = 0;
 
-        return FIcosaPointCoord(neigh_id, neigh_X, neigh_Y, this->pointCoord.N_division);
+        //    if (neigh_level == EIcosLevel::L_FIRST_RING)
+        //        neigh_id = this->pointCoord.coord.downLeft();
+        //    if (neigh_level == EIcosLevel::L_SECOND_RING)
+        //        neigh_id = this->pointCoord.coord.left();
+
+        //}
+
+        return FIcosaPointCoord(neigh_id, neigh_XY, this->pointCoord.N_division);
     }
     FIcosaPointCoord leftNeighbour() {
         int neigh_X = this->pointCoord.X - 1;
         int neigh_Y = this->pointCoord.Y;
         EIcosID neigh_id = this->pointCoord.coord.id;
 
-        UE_LOG(LogTemp, Warning, TEXT("Left neighbour(): %d | %d %d | \n"),
+        FVector2D neigh_XY = FVector2D(neigh_X, neigh_Y);
+
+        FIcosaVertexNeighbourEntry::correctCoordinate(this->pointCoord.coord, neigh_id, neigh_XY, this->pointCoord.N_division);
+
+        /*UE_LOG(LogTemp, Warning, TEXT("Left neighbour(): %d | %d %d | \n"),
             static_cast<int>(neigh_id),
             neigh_X, neigh_Y);
 
@@ -582,15 +776,20 @@ struct FIcosaPoint
             }
             neigh_X = this->pointCoord.N_division - neigh_Y - 1;
             neigh_Y = this->pointCoord.N_division - 1;
-        }
+        }*/
 
-        return FIcosaPointCoord(neigh_id, neigh_X, neigh_Y, this->pointCoord.N_division);
+        return FIcosaPointCoord(neigh_id, neigh_XY, this->pointCoord.N_division);
     }
     FIcosaPointCoord rightNeighbour() {
         int neigh_X = this->pointCoord.X + 1;
         int neigh_Y = this->pointCoord.Y;
         EIcosID neigh_id = this->pointCoord.coord.id;
-        if (this->pointCoord.N_division == neigh_X) {
+
+        FVector2D neigh_XY = FVector2D(neigh_X, neigh_Y);
+
+        FIcosaVertexNeighbourEntry::correctCoordinate(this->pointCoord.coord, neigh_id, neigh_XY, this->pointCoord.N_division);
+
+        /*if (this->pointCoord.N_division == neigh_X) {
             EIcosLevel neigh_level = this->pointCoord.coord.id_level;
             if ((neigh_Y == 0) || (neigh_level == EIcosLevel::L_FIRST_RING))
                 neigh_id = this->pointCoord.coord.downRight();
@@ -600,9 +799,9 @@ struct FIcosaPoint
             neigh_X = this->pointCoord.N_division - neigh_Y;
             neigh_Y = 0;
 
-        }
+        }*/
 
-        return FIcosaPointCoord(neigh_id, neigh_X, neigh_Y, this->pointCoord.N_division);
+        return FIcosaPointCoord(neigh_id, neigh_XY, this->pointCoord.N_division);
     }
     FIcosaPointCoord upRightNeighbour() { // Hard
         int neigh_X = this->pointCoord.X + 1;
@@ -610,30 +809,39 @@ struct FIcosaPoint
 
 
         EIcosID neigh_id = this->pointCoord.coord.id;
-        if (this->pointCoord.N_division == neigh_Y) {
-            // IDK
-        }
+        /*if (this->pointCoord.N_division == neigh_Y) {
+            neigh_id = this->pointCoord.coord.right();
+            neigh_X = 0;
+            neigh_Y = 0;
+        }*/
 
-        return FIcosaPointCoord(neigh_id, neigh_X, neigh_Y, this->pointCoord.N_division);
+        FVector2D neigh_XY = FVector2D(neigh_X, neigh_Y);
+
+        FIcosaVertexNeighbourEntry::correctCoordinate(this->pointCoord.coord, neigh_id, neigh_XY, this->pointCoord.N_division);
+
+        return FIcosaPointCoord(neigh_id, neigh_XY, this->pointCoord.N_division);
     }
     FIcosaPointCoord downLeftNeighbour() { // Hard
         int neigh_X = this->pointCoord.X - 1;
         int neigh_Y = this->pointCoord.Y - 1;
-        if (this->pointCoord.N_division == neigh_Y) {
-            // IDK
-        }
-        // Pentagon edge case
-        if ((neigh_X == -1) && (neigh_Y == -1)) {
+        
+        
+        //if (0 == neigh_Y) {
+        //    // IDK
+        //}
+        //// Pentagon edge case
+        /*if ((neigh_X == -1) && (neigh_Y == -1)) {
             return FIcosaPointCoord(EIcosID::ID_EMPTY, neigh_X, neigh_Y, this->pointCoord.N_division);
-        }
+        }*/
 
         EIcosID neigh_id = this->pointCoord.coord.id;
-        return FIcosaPointCoord(neigh_id, neigh_X, neigh_Y, this->pointCoord.N_division);
+        FVector2D neigh_XY = FVector2D(neigh_X, neigh_Y);
+
+        FIcosaVertexNeighbourEntry::correctCoordinate(this->pointCoord.coord, neigh_id, neigh_XY, this->pointCoord.N_division);
+        return FIcosaPointCoord(neigh_id, neigh_XY, this->pointCoord.N_division);
     }
 
     void getFaceCoordinates() {
-
-            // TODO
         FVector& me = this->pointCoord.w_position;
 
         for (int i = 0; i < neighbourVertices->Num(); i++) { // need to have a specific ordering! CW!
@@ -645,8 +853,8 @@ struct FIcosaPoint
             FVector& elem_new = (*neighbourVertices)[next];
 
 
-            //hexVertices->Add((elem + me + elem_new) / 3.0); // betweem point
-            hexVertices->Add(elem);
+            hexVertices->Add((elem + me + elem_new) / 3.0); // betweem point
+            //hexVertices->Add(elem);
         }
     }
 };
@@ -723,10 +931,10 @@ public:
         //ret.Vertices.Add(FIcosaPointCoord(ID_SECOND_FACE, 0, 0, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
         
 
-        for (int x = 0; x < 4; x++) {
-            for (int y = 0; y < 4; y++) {
-                ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIRST_FACE, x, y, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
-                ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIFTH_FACE, x, y, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
+        for (int xi = 0; xi < 4; xi++) {
+            for (int yi = 0; yi < 4; yi++) {
+                ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIRST_FACE, xi, yi, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
+                ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIFTH_FACE, xi, yi, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
             }
         }
 
