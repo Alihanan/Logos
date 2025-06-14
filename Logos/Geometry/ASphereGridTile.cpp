@@ -41,42 +41,19 @@ void ASphereGridTile::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("Empty world, skip!\n"));
 		return;  // skip in viewport preview
 	}
-
-	this->generatorMesh = new SphereIcosaMeshGenerator(this->RADIUS, pow(2, this->NUM_SUBDIVIDE));
-	
-	FHexGridRenderData data;
-
-	if(id == 0)
-		data = generatorMesh->generateHexagon(1, 0, 0);
-	if(id == 1)
-		data = generatorMesh->generateHexagon(1, 1, 0);
-	if (id == 2)
-		data = generatorMesh->generateHexagon(1, 0, 1);
-	if (id == 3)
-		data = generatorMesh->generateHexagon(1, 1, 1);
-	if (id == 4)
-		data = generatorMesh->generateHexagon(1, 1, 2);
-	if (id == 5)
-		data = generatorMesh->generateHexagon(1, 2, 1);
-	if (id == 6)
-		data = generatorMesh->generateHexagon(1, 2, 2);
+}
 
 
-	
+void ASphereGridTile::parametrize(const FHexGridRenderData& data)
+{
+	//this->vertices = data.Vertices;
+	//this->triangles = data.Triangles;
+	this->renderData = data;
 
-	if (id == -1)
-		this->vertices = data.IcosaVertices;
-	else if (id == -2)
-		this->vertices = data.AllChunkVertices;
-	else
-	{
-		this->vertices = data.Vertices;
-		this->triangles = data.Triangles;
-	}
 
-	//if(this->vertices.Num() > 0)
-		//SetActorLocation(this->vertices[0]);
+	SetActorLabel(data.name);
 	SetActorLocation(FVector(0, 0, 0));
+
 	this->proceduralMesh = NewObject<UProceduralMeshComponent>(this, UProceduralMeshComponent::StaticClass(),
 		"ProceduralMesh");
 
@@ -89,21 +66,21 @@ void ASphereGridTile::BeginPlay()
 	this->proceduralMesh->SetFlags(RF_Transactional);
 	this->proceduralMesh->Modify();
 
-	if ((id != -1) && (id != -2)) {
-		// Enable editor visibility
-		this->proceduralMesh->CreateMeshSection(
-			0,          // Section Index
-			this->vertices, //data.Vertices,   // Vertices
-			this->triangles,  // Triangles
-			TArray<FVector>(),    // Normals
-			TArray<FVector2D>(),  // UVs
-			TArray<FColor>(),     // Vertex Colors
-			TArray<FProcMeshTangent>(), // Tangents
-			true        // Create Collision
-		);
-	}
-	//this->SetActorLabel("Kal1brov");
+	// Enable editor visibility
+	
+	this->proceduralMesh->CreateMeshSection(
+		0,          // Section Index
+		renderData.Vertices, //data.Vertices,   // Vertices
+		renderData.Triangles,  // Triangles
+		renderData.Normals,    // Normals
+		TArray<FVector2D>(),  // UVs
+		TArray<FColor>(),     // Vertex Colors
+		TArray<FProcMeshTangent>(), // Tangents
+		true        // Create Collision
+	);
+	
 }
+
 
 // Called every frame
 void ASphereGridTile::Tick(float DeltaTime)

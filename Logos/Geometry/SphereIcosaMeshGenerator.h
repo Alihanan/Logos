@@ -75,10 +75,10 @@ static const int icoPentagonNeighbors[EIcosID::TOTAL_ICOSAHEDRON_NUMBER][EIcosFa
     /* 4 */ { 0,    5,    9,    8,  3,   0},
     /* 5 */ { 0,    1,   10,    9,  4,   0},
     /* 6 */ { 2,    7,   11,   11, 10,   1},
-    /* 7 */ { 3,    8,   11,   11,  6,   1},
-    /* 8 */ { 4,    9,   11,   11,  7,   1},
-    /* 9 */ { 5,   10,   11,   11,  8,   1},
-    /*10 */ { 1,    6,   11,   11,  9,   1},
+    /* 7 */ { 3,    8,   11,   11,  6,   2},
+    /* 8 */ { 4,    9,   11,   11,  7,   3},
+    /* 9 */ { 5,   10,   11,   11,  8,   4},
+    /*10 */ { 1,    6,   11,   11,  9,   5},
     /*11 */ { 6,    7,    8,   -1,  9,  10}
 };
 
@@ -348,6 +348,15 @@ struct FIcosaPentCoord
 class FIcosaVertexNeighbourEntry
 {
 public:
+
+    FIcosaVertexNeighbourEntry(int N_div) :
+        NUM_DIVISION(N_div)
+    {
+
+    }
+protected:
+    int NUM_DIVISION = 0;
+public:
     struct FIcoseNeighCoordTransform
     {
         // For some reason Unreal does not have any adequate linear algebra libraries, BRUH
@@ -371,7 +380,7 @@ public:
     };
     
     inline static const FIcoseNeighCoordTransform ALL_VERTEX_COORD_TRANSFORM[EIcosID::TOTAL_ICOSAHEDRON_NUMBER] = {
-        {{0, 0, 0}, {0, 0, 0}},    // Pole
+        {{0, 0, 0}, {0, -1, 4}},    // Pole
         {{0, 1, -4}, {-1, 0, 4}},  // Up
         {{1, 0, -4}, {0, 1, 0}},   // Right
         {{1, 0, 0}, {0, 1, 4}},    // Down
@@ -383,11 +392,20 @@ public:
     inline static void correctCoordinate(const FIcosaPentCoord& objIn, EIcosID& neighID, FVector2D& xy, const int N_division) 
     {
         EIcosLevel level = FIcosaPentCoord::idToLevel(neighID);
+        int N_compare = N_division;
+        
+       
 
         UE_LOG(LogTemp, Warning, TEXT("correctCoordinate: X: %d, Y: %d, face: %d!\n"),
             (int)(xy.X), (int)(xy.Y),
             static_cast<int>(neighID)
         );
+
+        bool upperLevel = level == EIcosLevel::L_FIRST_RING;
+        bool lowerLevel = level == EIcosLevel::L_SECOND_RING;
+        bool isPole = (level == EIcosLevel::L_NORTH_POLE) || (level == EIcosLevel::L_SOUTH_POLE);
+        if (lowerLevel) xy = FVector2D(xy.Y, xy.X);
+        if (isPole) N_compare = 1;
 
         // TODO convert to lookup
         EIcosID pole;
@@ -404,7 +422,7 @@ public:
         if (level == EIcosLevel::L_FIRST_RING)
             right = objIn.downRight();
         else
-            right = objIn.downRight();
+            right = objIn.upRight();
 
         EIcosID down;
         if (level == EIcosLevel::L_FIRST_RING)
@@ -419,17 +437,18 @@ public:
 
         bool x0 = (X == 0);
         bool x_minusOne = (X == -1);
-        bool xN = (xy.X == N_division);
+        bool xN = (xy.X == N_compare);
         bool xOther = (!xN) & (!x_minusOne);
 
         bool y0 = (Y == 0);
         bool y_minusOne = (Y == -1);
-        bool yN = (Y == N_division);
+        bool yN = (Y == N_compare);
         bool yOther = (!y_minusOne) & (!yN);
 
         if (xOther & yOther) { // Inside, no change
             UE_LOG(LogTemp, Warning, TEXT("No change in correctCoordinate!\n")
                 );
+            if (lowerLevel) xy = FVector2D(xy.Y, xy.X);
             return;
         } 
         
@@ -440,7 +459,10 @@ public:
         }
         else if (x0 & yN) { // Goes to pole
             neighID = pole;
+            
             xy = ALL_VERTEX_COORD_TRANSFORM[0].transformXY(xy);
+            if (lowerLevel) xy = FVector2D(xy.Y, xy.X);
+
             UE_LOG(LogTemp, Warning, TEXT("x == 0 and y == N, pole detected!\n")
             );
         }
@@ -450,7 +472,7 @@ public:
             );
             neighID = up;
             xy = ALL_VERTEX_COORD_TRANSFORM[1].transformXY(xy);
-            
+            if (lowerLevel) xy = FVector2D(xy.Y, xy.X);
         }
         else if (xN) {
             UE_LOG(LogTemp, Warning, TEXT("x == N, righ detected! [%d]->[%d]\n"),
@@ -458,6 +480,7 @@ public:
             );
             neighID = right;
             xy = ALL_VERTEX_COORD_TRANSFORM[2].transformXY(xy);
+            if (lowerLevel) xy = FVector2D(xy.Y, xy.X);
         }
         else if (y_minusOne) {
             UE_LOG(LogTemp, Warning, TEXT("y == -1, down detected! [%d]->[%d]\n"),
@@ -465,6 +488,7 @@ public:
             );
             neighID = down;
             xy = ALL_VERTEX_COORD_TRANSFORM[3].transformXY(xy);
+            if (lowerLevel) xy = FVector2D(xy.Y, xy.X);
         }
         else if (x_minusOne) {
             UE_LOG(LogTemp, Warning, TEXT("x == -1, left detected! [%d]->[%d]\n"),
@@ -472,6 +496,7 @@ public:
             );
             neighID = left;
             xy = ALL_VERTEX_COORD_TRANSFORM[5].transformXY(xy);
+            if (lowerLevel) xy = FVector2D(xy.Y, xy.X);
         }
     }
 
@@ -497,7 +522,7 @@ struct FIcosaPointCoord
         right(this->coord.right())
     {
 
-        this->N_division = this->N_division * !this->coord.isPole() + this->coord.isPole();
+        //this->N_division = this->N_division * !this->coord.isPole() + this->coord.isPole();
         if(static_cast<int>(this->coord.id) != -1)
             this->w_position = (computeCoordinate());
         /*
@@ -621,25 +646,26 @@ struct FIcosaPoint
         *   This function computes 3D Vector coordinates of
         */
 
-        /*
-        if (this->coord.id == EIcosID::ID_NORTH_POLE) {
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_FIRST_FACE, 0, 7, N_division).getCoordinate());
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_SECOND_FACE, 0, 7, N_division).getCoordinate());
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_THIRD_FACE, 0, 7, N_division).getCoordinate());
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_FOURTH_FACE, 0, 7, N_division).getCoordinate());
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_FIFTH_FACE, 0, 7, N_division).getCoordinate());
+        
+        if (this->pointCoord.coord.id == EIcosID::ID_NORTH_POLE) {
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_FIRST_FACE, 0, this->pointCoord.N_division - 1, this->pointCoord.N_division).w_position);
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_SECOND_FACE, 0, this->pointCoord.N_division-1, this->pointCoord.N_division).w_position);
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_THIRD_FACE, 0, this->pointCoord.N_division-1, this->pointCoord.N_division).w_position);
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_FOURTH_FACE, 0, this->pointCoord.N_division-1, this->pointCoord.N_division).w_position);
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_FIFTH_FACE, 0, this->pointCoord.N_division-1, this->pointCoord.N_division).w_position);
+            return;
         }
-        if (this->coord.id == EIcosID::ID_SOUTH_POLE) {
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_SIXTH_FACE, 7, 0, N_division).getCoordinate());
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_SEVENTH_FACE, 7, 0, N_division).getCoordinate());
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_EIGHTH_FACE, 7, 0, N_division).getCoordinate());
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_NINTH_FACE, 7, 0, N_division).getCoordinate());
-            this->neighbours.push_back(FIcosaPointCoord(EIcosID::ID_TENTH_FACE, 7, 0, N_division).getCoordinate());
+        if (this->pointCoord.coord.id == EIcosID::ID_SOUTH_POLE) {
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_TENTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division).w_position);
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_NINTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division).w_position);
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_EIGHTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division).w_position);
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_SEVENTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division).w_position);
+            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_SIXTH_FACE, this->pointCoord.N_division-1, 0, this->pointCoord.N_division).w_position);
+            return;
         }
-        */
         
         TArray<FIcosaPointCoord> neighbours;
-        
+
         neighbours.Add(upNeighbour());
         auto elem = neighbours[0];
         UE_LOG(LogTemp, Warning, TEXT("neigh 2D (up): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position.X, elem.w_position.Y, elem.w_position.Z);
@@ -854,7 +880,7 @@ struct FIcosaPoint
 
 
             hexVertices->Add((elem + me + elem_new) / 3.0); // betweem point
-            //hexVertices->Add(elem);
+            //hexVertices->Add(elem); // TODO remove
         }
     }
 };
@@ -898,7 +924,7 @@ public:
         FVector center = scaleToRadius(hexObject.pointCoord.w_position);
         ret.Vertices.Add(center);
         //ret.Vertices.Add(hexObject.pointCoord.w_position); // TODO remove
-        //ret.Normals.Add(center.GetSafeNormal());
+        ret.Normals.Add(center.GetSafeNormal());
 
         for (int i = 0; i < hexVertices->Num(); i++)
         {
@@ -906,17 +932,25 @@ public:
             ret.Vertices.Add(neigh);
             //ret.Vertices.Add((*hexVertices)[i]);// TODO remove
 
-            //ret.Normals.Add(neigh.GetSafeNormal());
+            ret.Normals.Add(neigh.GetSafeNormal());
             UE_LOG(LogTemp, Warning, TEXT("X: %d | Y: %d | Z: %d\n"), faceID, x, y);
             ret.Triangles.Add(0);  // center
             ret.Triangles.Add(i + 1); // this vertex
             ret.Triangles.Add(((i + 2) + (hexVertices->Num() - 1)) % hexVertices->Num() + 1); // prev vertex
         }
 
+        FString type = hexVertices->Num() == 6 ? "Hexagon" : "Pentagon";
+
+        ret.name = FString::Printf(TEXT("%s_face%d_x:%d_y:%d"),
+            *type, faceID, x, y);
+
+
         // TODO clear
+        /*
         for (int i = 0; i < 12; i++) {
             ret.IcosaVertices.Add(ALL_COORDINATES[i].GetSafeNormal() * this->RADIUS);
         }
+        */
 
        /* ret.IcosaVertices.Add(ALL_COORDINATES[0].GetSafeNormal() * this->RADIUS);
         ret.IcosaVertices.Add(ALL_COORDINATES[1].GetSafeNormal() * this->RADIUS);
@@ -930,14 +964,14 @@ public:
         //ret.Vertices.Add(FIcosaPointCoord(ID_NORTH_POLE, 0, 0, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
         //ret.Vertices.Add(FIcosaPointCoord(ID_SECOND_FACE, 0, 0, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
         
-
+        /*
         for (int xi = 0; xi < 4; xi++) {
             for (int yi = 0; yi < 4; yi++) {
                 ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIRST_FACE, xi, yi, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
                 ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIFTH_FACE, xi, yi, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
             }
         }
-
+        */
 
         ret.name = FString::Printf(TEXT("%d_%d_%d"),
             static_cast<int32>(faceID), x, y);

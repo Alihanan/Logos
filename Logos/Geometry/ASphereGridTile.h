@@ -22,6 +22,8 @@ public:
 	ASphereGridTile();
 	~ASphereGridTile() {}
 
+	void parametrize(const FHexGridRenderData& data);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -35,19 +37,15 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TArray<int> triangles;
 
-	SphereIcosaMeshGenerator* generatorMesh;
+
+	FHexGridRenderData renderData;
+
+	//SphereIcosaMeshGenerator* generatorMesh;
+
+
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(EditAnywhere)
-	int32 NUM_SUBDIVIDE = 2;
-
-	UPROPERTY(EditAnywhere)
-	double RADIUS = 1000.0;
-
-	UPROPERTY(EditAnywhere)
-	int32 id = 0;
 
 };
