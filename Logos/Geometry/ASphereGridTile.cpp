@@ -41,19 +41,12 @@ void ASphereGridTile::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("Empty world, skip!\n"));
 		return;  // skip in viewport preview
 	}
+	this->initialize();
 }
 
-
-void ASphereGridTile::parametrize(const FHexGridRenderData& data)
+void ASphereGridTile::initialize()
 {
-	//this->vertices = data.Vertices;
-	//this->triangles = data.Triangles;
-	this->renderData = data;
-
-
-	SetActorLabel(data.name);
-	SetActorLocation(FVector(0, 0, 0));
-
+	if (this->proceduralMesh != nullptr) return;
 	this->proceduralMesh = NewObject<UProceduralMeshComponent>(this, UProceduralMeshComponent::StaticClass(),
 		"ProceduralMesh");
 
@@ -65,6 +58,16 @@ void ASphereGridTile::parametrize(const FHexGridRenderData& data)
 	this->proceduralMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	this->proceduralMesh->SetFlags(RF_Transactional);
 	this->proceduralMesh->Modify();
+}
+
+
+void ASphereGridTile::parametrize(const FHexGridRenderData& data)
+{
+	this->initialize();
+	this->renderData = data;
+
+	SetActorLabel(data.name);
+	SetActorLocation(FVector(0, 0, 0));
 
 	// Enable editor visibility
 	
@@ -73,14 +76,18 @@ void ASphereGridTile::parametrize(const FHexGridRenderData& data)
 		renderData.Vertices, //data.Vertices,   // Vertices
 		renderData.Triangles,  // Triangles
 		renderData.Normals,    // Normals
-		TArray<FVector2D>(),  // UVs
-		TArray<FColor>(),     // Vertex Colors
+		renderData.UVs,  // UVs
+		renderData.colors,     // Vertex Colors
 		TArray<FProcMeshTangent>(), // Tangents
 		true        // Create Collision
 	);
-	
 }
-
+void ASphereGridTile::setMaterial(UMaterialInterface* mat)
+{
+	if (mat == nullptr) return;
+	this->material = mat;
+	this->proceduralMesh->SetMaterial(0, this->material);
+}
 
 // Called every frame
 void ASphereGridTile::Tick(float DeltaTime)

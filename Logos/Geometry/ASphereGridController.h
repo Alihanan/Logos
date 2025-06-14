@@ -20,6 +20,8 @@ public:
 	AASphereGridController();
 
 protected:
+	SphereIcosaMeshGenerator* generatorMesh;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -29,7 +31,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	double RADIUS = 1000.0;
 
-	SphereIcosaMeshGenerator* generatorMesh;
+	UPROPERTY(EditAnywhere)
+	UMaterialInterface* material;
 
 public:	
 	// Called every frame

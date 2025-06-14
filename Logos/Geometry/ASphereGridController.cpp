@@ -41,6 +41,7 @@ void AASphereGridController::BeginPlay()
 				if (NewActor)
 				{
 					FHexGridRenderData data = this->generatorMesh->generateHexagon(f, x, y);
+					NewActor->setMaterial(this->material);
 					NewActor->parametrize(data);
 				}
 				
@@ -55,6 +56,7 @@ void AASphereGridController::BeginPlay()
 	{
 		FHexGridRenderData data = this->generatorMesh->generateHexagon(0, 0, 0);
 		NewActorNorthPole->parametrize(data);
+		NewActorNorthPole->setMaterial(this->material);
 	}
 
 	ASphereGridTile* NewActorSouthPole = world->SpawnActor<ASphereGridTile>(ASphereGridTile::StaticClass(),
@@ -65,10 +67,8 @@ void AASphereGridController::BeginPlay()
 	{
 		FHexGridRenderData data = this->generatorMesh->generateHexagon(11, 0, 0);
 		NewActorSouthPole->parametrize(data);
+		NewActorSouthPole->setMaterial(this->material);
 	}
-
-	
-	
 }
 
 // Called every frame

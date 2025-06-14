@@ -23,21 +23,16 @@ public:
 	~ASphereGridTile() {}
 
 	void parametrize(const FHexGridRenderData& data);
-
+	void setMaterial(UMaterialInterface* material);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void initialize();
 
 protected:
 	UProceduralMeshComponent* proceduralMesh;
 
-	UPROPERTY(EditAnywhere, Meta = (MakeEditWidget = true))
-	TArray<FVector> vertices;
-
-	UPROPERTY(EditAnywhere)
-	TArray<int> triangles;
-
-
+	UMaterialInterface* material = nullptr;
 	FHexGridRenderData renderData;
 
 	//SphereIcosaMeshGenerator* generatorMesh;
