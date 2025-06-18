@@ -71,6 +71,12 @@ void AASphereGridController::BeginPlay()
 	}
 }
 
+
+
+void AASphereGridController::InitializeHeightmap()
+{
+}
+
 // Called every frame
 void AASphereGridController::Tick(float DeltaTime)
 {

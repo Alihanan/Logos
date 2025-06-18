@@ -35,6 +35,9 @@ protected:
 	UMaterialInterface* material = nullptr;
 	FHexGridRenderData renderData;
 
+	UPROPERTY(EditAnywhere)
+	TArray<FVector2D> UVs;
+
 	//SphereIcosaMeshGenerator* generatorMesh;
 
 

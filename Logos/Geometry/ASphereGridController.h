@@ -25,6 +25,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void InitializeHeightmap();
+
 	UPROPERTY(EditAnywhere)
 	int32 NUM_SUBDIVIDE = 2;
 
@@ -33,6 +35,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UMaterialInterface* material;
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* heightmap;
 
 public:	
 	// Called every frame

@@ -66,6 +66,8 @@ void ASphereGridTile::parametrize(const FHexGridRenderData& data)
 	this->initialize();
 	this->renderData = data;
 
+	this->UVs = data.UVs;
+
 	SetActorLabel(data.name);
 	SetActorLocation(FVector(0, 0, 0));
 

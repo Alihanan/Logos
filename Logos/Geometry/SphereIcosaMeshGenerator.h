@@ -956,11 +956,16 @@ public:
         
         auto hexVertices = hexObject.hexVertices;
 
+
+        TArray<FVector2D> UVs_before;
+
         FVector center = scaleToRadius(hexObject.pointCoord.w_position);
         ret.Vertices.Add(center);
         //ret.Vertices.Add(hexObject.pointCoord.w_position); // TODO remove
         ret.Normals.Add(center.GetSafeNormal());
-        ret.UVs.Add(transformSphericalUV(center));
+        UVs_before.Add(transformSphericalUV(center));
+
+
 
         for (int i = 0; i < hexVertices->Num(); i++)
         {
@@ -968,22 +973,77 @@ public:
             ret.Vertices.Add(neigh);
             //ret.colors.Add(FColor::White);
 
-            ret.UVs.Add(transformSphericalUV(neigh));
 
-            //ret.Vertices.Add((*hexVertices)[i]);// TODO remove
+            FVector2D uv = transformSphericalUV(neigh);
+            UVs_before.Add(uv);
+
 
             ret.Normals.Add(neigh.GetSafeNormal());
             UE_LOG(LogTemp, Warning, TEXT("X: %d | Y: %d | Z: %d\n"), faceID, x, y);
+
+            int idx_last = ((i + 2) + (hexVertices->Num() - 1)) % hexVertices->Num() + 1;
             ret.Triangles.Add(0);  // center
             ret.Triangles.Add(i + 1); // this vertex
-            ret.Triangles.Add(((i + 2) + (hexVertices->Num() - 1)) % hexVertices->Num() + 1); // prev vertex
+            ret.Triangles.Add(idx_last); // prev vertex
+
+
+            // FixUV
+            /*
+            double ax = UVs_before[0].X;
+            double bx = UVs_before[i + 1].X;
+            double cx = UVs_before[idx_last].X;
+            double ay = UVs_before[0].Y;
+            double by = UVs_before[i + 1].Y;
+            double cy = UVs_before[idx_last].Y;
+
+
+            if (((bx - ax) >= 0.5) && (ay != 1)) bx -= 1;
+            if ((cx - bx) > 0.5) cx -= 1;
+            if (((ax > 0.5) && ((ax - cx) > 0.5)) || ((ax == 1) && (cy == 0))) ax -= 1;
+            if (bx > 0.5 && bx - ax > 0.5) bx -= 1;
+            if ((ay == 0 ) || (ay == 1)) ax = (bx + cx) / 2;
+            if ((by == 0) || (by == 1)) bx = (ax + cx) / 2;
+            if ((cy == 0) || (cy == 1)) cx = (ax + bx) / 2;*/
+
         }
+
+        double minx = 99999;
+        double maxx = -9999;
+        for (int i = 0; i < (hexVertices->Num()+1); i++)
+        {
+            double ax = UVs_before[i].X;
+            
+            if (maxx < ax) maxx = ax;
+            if (minx > ax) minx = ax;
+        }
+        bool shouldChange = (maxx - minx) > 0.5;
+
+        for (int j = 0; j < (hexVertices->Num() + 1); j++)
+        {
+
+            double bx = UVs_before[j].X;
+
+            if(shouldChange && (bx < 0.5))
+                UVs_before[j].X = UVs_before[j].X + 1;
+
+            ret.UVs.Add(UVs_before[j]);
+        }
+
+
+
 
         FString type = hexVertices->Num() == 6 ? "Hexagon" : "Pentagon";
 
         ret.name = FString::Printf(TEXT("%s_face%d_x:%d_y:%d"),
             *type, faceID, x, y);
 
+
+
+        
+        for (int i = 0; i < (hexVertices->Num() + 1); i++)
+        {
+
+        }
 
         // TODO clear
         /*
