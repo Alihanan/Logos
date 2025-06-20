@@ -23,11 +23,15 @@ void AASphereGridController::BeginPlay()
 		return;  // skip in viewport preview
 	}
 
+	InitializeHeightmap();
+
 	UWorld* world = GetWorld();
 	int32 N_divisions = pow(2, this->NUM_SUBDIVIDE);
-	this->generatorMesh = new SphereIcosaMeshGenerator(this->RADIUS, N_divisions);
+	//this->generatorMesh = new SphereIcosaMeshGenerator(this->RADIUS, N_divisions, );
+	this->generatorMesh = new SphereIcosaMeshGenerator(this->RADIUS, N_divisions, &(this->heightmapData), HEIGHT_ABOVE_RADIUS);
 
-	for (int f = 1; f < 11; f++) 
+
+	for (int f = 2; f < 3; f++) 
 	{
 		//if ((f != 6) && (f != 1)) continue;
 		for (int x = 0; x < N_divisions; x++)
@@ -75,6 +79,49 @@ void AASphereGridController::BeginPlay()
 
 void AASphereGridController::InitializeHeightmap()
 {
+	if (this->heightmapTexture == nullptr) return;
+
+	
+	FTexture2DMipMap& Mip = heightmapTexture->GetPlatformData()->Mips[0];
+	EPixelFormat fmt = heightmapTexture->GetPixelFormat();
+	void* RawData = Mip.BulkData.Lock(LOCK_READ_ONLY);
+	// … copy out your pixels …
+
+	int width = Mip.SizeX;
+	int height = Mip.SizeY;
+	int N = width * height;
+
+	// Allocate array
+	heightmapData = TArray2D<double>(width, height);
+	double* RawOut = heightmapData.GetData();
+
+	if (fmt == EPixelFormat::PF_B8G8R8A8)
+	{
+		const FColor* Colors = static_cast<const FColor*>(RawData);
+		for (int i = 0; i < N; i++) {
+			RawOut[i] = Colors[i].R / 255.0;
+		}
+	}
+	else if (fmt == EPixelFormat::PF_FloatRGBA)
+	{
+		const FFloat16Color* FPix = static_cast<const FFloat16Color*>(RawData);
+		for (int i = 0; i < N; i++) {
+			RawOut[i] = FPix[i].R;
+		}
+	}
+	else if (fmt == EPixelFormat::PF_G8)
+	{
+		const uint8* Grays = static_cast<const uint8*>(RawData);
+		for (int i = 0; i < N; i++) {
+			RawOut[i] = Grays[i] / 255.0;
+		}
+	}
+	else
+	{
+		// TODO make error
+	}
+
+	Mip.BulkData.Unlock();
 }
 
 // Called every frame

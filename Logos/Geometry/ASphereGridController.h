@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Math/AsianMath.h"
 #include "Geometry/ASphereGridTile.h"
 #include "Geometry/SphereIcosaMeshGenerator.h"
 
@@ -34,10 +35,15 @@ protected:
 	double RADIUS = 1000.0;
 
 	UPROPERTY(EditAnywhere)
+	double HEIGHT_ABOVE_RADIUS = 100.0;
+
+	UPROPERTY(EditAnywhere)
 	UMaterialInterface* material;
 
 	UPROPERTY(EditAnywhere)
-	UTexture2D* heightmap;
+	UTexture2D* heightmapTexture = nullptr;
+
+	TArray2D<double> heightmapData;
 
 public:	
 	// Called every frame
