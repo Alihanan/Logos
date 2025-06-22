@@ -10,7 +10,10 @@
 #include <vector>
 #include "Math/AsianMath.h"
 #include <unordered_map>
-
+#include <unordered_set>
+#include <map>
+#include <set>
+#include <queue>
 
 enum EIcosID : int
 {
@@ -67,7 +70,7 @@ enum EIcosFaceDirection : int
 static const int icoPentagonNeighbors[EIcosID::TOTAL_ICOSAHEDRON_NUMBER][EIcosFaceDirection::TOTAL_DIRECTION_NUMBER] = {
 
 
-           /* T_R   R    D_R   D_L  L  T_L*/
+    /* T_R   R    D_R   D_L  L  T_L*/
     /* 0 */ { 2,    1,    5,   -1,  4,   3},
     /* 1 */ { 0,    2,    6,   10,  5,   0},
     /* 2 */ { 0,    3,    7,    6,  1,   0},
@@ -102,7 +105,7 @@ enum EIcosVertexDirection : int
 static const int icoVertexNeighbors[EIcosID::TOTAL_ICOSAHEDRON_NUMBER][EIcosVertexDirection::TOTAL_VERT_DIRECTION_NUMBER] = {
 
 
-           /* X-   Y+x0   Y+  DIA+    X+   X+y0     Y-   DIA-*/
+    /* X-   Y+x0   Y+  DIA+    X+   X+y0     Y-   DIA-*/
     /* 0 */ { 2,    1,    1,   5,     4,    4,      3,   -1},
 
 
@@ -173,6 +176,74 @@ inline static const FVector ALL_COORDINATES[12] = {
         {0, 0, -1}, // South pole 11
 };
 
+inline static const FMatrix ALL_ICOSA_FACE_MATRICES[24] = {
+    constructMatrix(ALL_COORDINATES[1], ALL_COORDINATES[2], ALL_COORDINATES[0]).Inverse(), // OneUp
+    constructMatrix(ALL_COORDINATES[1], ALL_COORDINATES[6], ALL_COORDINATES[2]).Inverse(), // OneDown
+
+    constructMatrix(ALL_COORDINATES[2], ALL_COORDINATES[3], ALL_COORDINATES[0]).Inverse(), 
+    constructMatrix(ALL_COORDINATES[2], ALL_COORDINATES[7], ALL_COORDINATES[3]).Inverse(),
+
+    constructMatrix(ALL_COORDINATES[3], ALL_COORDINATES[4], ALL_COORDINATES[0]).Inverse(),
+    constructMatrix(ALL_COORDINATES[3], ALL_COORDINATES[8], ALL_COORDINATES[4]).Inverse(),
+
+    constructMatrix(ALL_COORDINATES[4], ALL_COORDINATES[5], ALL_COORDINATES[0]).Inverse(),
+    constructMatrix(ALL_COORDINATES[4], ALL_COORDINATES[9], ALL_COORDINATES[5]).Inverse(),
+
+    constructMatrix(ALL_COORDINATES[5], ALL_COORDINATES[1], ALL_COORDINATES[0]).Inverse(),
+    constructMatrix(ALL_COORDINATES[5], ALL_COORDINATES[10], ALL_COORDINATES[1]).Inverse(),
+
+
+    constructMatrix(ALL_COORDINATES[6], ALL_COORDINATES[7], ALL_COORDINATES[2]).Inverse(),
+    constructMatrix(ALL_COORDINATES[6], ALL_COORDINATES[11], ALL_COORDINATES[7]).Inverse(),
+
+    constructMatrix(ALL_COORDINATES[7], ALL_COORDINATES[8], ALL_COORDINATES[3]).Inverse(),
+    constructMatrix(ALL_COORDINATES[7], ALL_COORDINATES[11], ALL_COORDINATES[8]).Inverse(),
+
+    constructMatrix(ALL_COORDINATES[8], ALL_COORDINATES[9], ALL_COORDINATES[4]).Inverse(),
+    constructMatrix(ALL_COORDINATES[8], ALL_COORDINATES[11], ALL_COORDINATES[9]).Inverse(),
+
+    constructMatrix(ALL_COORDINATES[9], ALL_COORDINATES[10], ALL_COORDINATES[5]).Inverse(),
+    constructMatrix(ALL_COORDINATES[9], ALL_COORDINATES[11], ALL_COORDINATES[10]).Inverse(),
+
+    constructMatrix(ALL_COORDINATES[10], ALL_COORDINATES[6], ALL_COORDINATES[1]).Inverse(),
+    constructMatrix(ALL_COORDINATES[10], ALL_COORDINATES[11], ALL_COORDINATES[6]).Inverse(),
+    
+};
+
+inline static const FVector ALL_NORMAL_COORDINATES[20] = {
+    ((ALL_COORDINATES[1] + ALL_COORDINATES[2] + ALL_COORDINATES[0]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[1] + ALL_COORDINATES[6] + ALL_COORDINATES[2]) / 3.0).GetSafeNormal(),
+
+
+    ((ALL_COORDINATES[2] + ALL_COORDINATES[3] + ALL_COORDINATES[0]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[2] + ALL_COORDINATES[7] + ALL_COORDINATES[3]) / 3.0).GetSafeNormal(),
+
+    ((ALL_COORDINATES[3] + ALL_COORDINATES[4] + ALL_COORDINATES[0]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[3] + ALL_COORDINATES[8] + ALL_COORDINATES[4]) / 3.0).GetSafeNormal(),
+
+    ((ALL_COORDINATES[4] + ALL_COORDINATES[5] + ALL_COORDINATES[0]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[4] + ALL_COORDINATES[9] + ALL_COORDINATES[5]) / 3.0).GetSafeNormal(),
+
+    ((ALL_COORDINATES[5] + ALL_COORDINATES[1] + ALL_COORDINATES[0]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[5] + ALL_COORDINATES[10] + ALL_COORDINATES[1]) / 3.0).GetSafeNormal(),
+
+
+    ((ALL_COORDINATES[6] + ALL_COORDINATES[7] + ALL_COORDINATES[2]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[6] + ALL_COORDINATES[11] + ALL_COORDINATES[7]) / 3.0).GetSafeNormal(),
+
+    ((ALL_COORDINATES[7] + ALL_COORDINATES[8] + ALL_COORDINATES[3]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[7] + ALL_COORDINATES[11] + ALL_COORDINATES[8]) / 3.0).GetSafeNormal(),
+
+    ((ALL_COORDINATES[8] + ALL_COORDINATES[9] + ALL_COORDINATES[4]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[8] + ALL_COORDINATES[11] + ALL_COORDINATES[9]) / 3.0).GetSafeNormal(),
+
+    ((ALL_COORDINATES[9] + ALL_COORDINATES[10] + ALL_COORDINATES[5]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[9] + ALL_COORDINATES[11] + ALL_COORDINATES[10]) / 3.0).GetSafeNormal(),
+
+    ((ALL_COORDINATES[10] + ALL_COORDINATES[6] + ALL_COORDINATES[1]) / 3.0).GetSafeNormal(),
+    ((ALL_COORDINATES[10] + ALL_COORDINATES[11] + ALL_COORDINATES[6]) / 3.0).GetSafeNormal(),
+};
+
 struct FIcosaPentCoord
 {
     EIcosID id;
@@ -233,7 +304,7 @@ struct FIcosaPentCoord
     {
         int ret_id = static_cast<int>(this->id);
         return static_cast<EIcosID>(icoPentagonNeighbors[ret_id][DIR_TOP_LEFT_VDIR_TOP]);
-        
+
         /*int level = idToLevel(this->id);
 
         ret_id = ret_id - 5;
@@ -342,9 +413,6 @@ struct FIcosaPentCoord
     }
 };
 
-
-
-
 class FIcosaVertexNeighbourConversion
 {
 public:
@@ -357,7 +425,8 @@ public:
 
         FIcoseNeighCoordTransform(FVector xMat, FVector yMat) :
             xMatRow(xMat), yMatRow(yMat)
-        {}
+        {
+        }
 
         FIcoseNeighCoordTransform() = default;
 
@@ -516,9 +585,8 @@ public:
 
 
 
-    
-};
 
+};
 
 struct FIcosaPointCoord
 {
@@ -526,9 +594,11 @@ struct FIcosaPointCoord
     int X = 0;
     int Y = 0;
     int N_division = 1;
-    FVector w_position = FVector::Zero();
+    //FVector w_position = FVector::Zero();
 
     EIcosID upRight = EIcosID::ID_EMPTY, downRight = EIcosID::ID_EMPTY, right = EIcosID::ID_EMPTY;
+    std::size_t hashCached = 0;
+
 
     FIcosaPointCoord(EIcosID id, FVector2D xy, int N_division) :
         coord(FIcosaPentCoord(id)), X(xy.X), Y(xy.Y), N_division(N_division),
@@ -536,34 +606,97 @@ struct FIcosaPointCoord
         downRight(this->coord.downRight()),
         right(this->coord.right())
     {
-
-        //this->N_division = this->N_division * !this->coord.isPole() + this->coord.isPole();
-        if(static_cast<int>(this->coord.id) != -1)
-            this->w_position = (computeCoordinate());
-        /*
-        //UE_LOG(LogTemp, Warning, TEXT("[constructor FIcosaPointCoord] face: %d | Position: %f %f %f | N_division: %d\n"),
-            static_cast<int>(id),
-            this->w_position.X, this->w_position.Y, this->w_position.Z, N_division);
-
-        //UE_LOG(LogTemp, Warning, TEXT("upRight: %d | downRight: %d | right: %d\n"),
-            static_cast<int>(upRight),
-            static_cast<int>(downRight),
-            static_cast<int>(right));
-        */
+        //if ((static_cast<int>(this->coord.id) != -1))
+        //    this->w_position = (computeCoordinate());
     }
+
+    FIcosaPointCoord(int idIn, int x, int y, int N_division) :
+        FIcosaPointCoord(static_cast<EIcosID>(idIn), FVector2D(x, y), N_division)
+    {}
+
 
     FIcosaPointCoord(EIcosID idIn, int x, int y, int N_division) :
         FIcosaPointCoord(idIn, FVector2D(x, y), N_division)
+    {}
+
+    bool operator==(const FIcosaPointCoord& Other) const
     {
+        return (X == Other.X) && (Y == Other.Y) && (coord.id == Other.coord.id) && (N_division == Other.N_division);
+    }
+    // 1) Strict-weak ordering by X, then Y, then Z
+    bool operator<(FIcosaPointCoord const& B) const
+    {
+        int my_id = static_cast<int>(coord.id);
+        int other_id = static_cast<int>(B.coord.id);
+        if (my_id != other_id) return my_id < other_id;
+        if (X != B.X) return X < B.X;
+        if (Y != B.Y) return Y < B.Y;
+        return N_division < B.N_division;
     }
 
-    FVector computeCoordinate() {
+    inline static FIcosaPointCoord convertPositionToIcosaPoint(FVector position, int N_divisions)
+    {
+        /*
+         *  Answer is from here:
+         *  https://stackoverflow.com/a/69356474
+         */
+
+        // Find face ID based on normal dot product
+        double max_dist = -std::numeric_limits<double>::infinity();
+        int max_dist_idx = -1;
+        for (int i = 0; i < 20; i++) // NO POLES! (0, 11)
+        {
+            double correspondence = position.Dot(ALL_NORMAL_COORDINATES[i]);
+
+            if (correspondence > max_dist)
+            {
+                max_dist = correspondence;
+                max_dist_idx = i;
+            }
+        }
+
+
+        // barycentric's first two correspond to our needed coordinates
+        FVector barycentric = ALL_ICOSA_FACE_MATRICES[max_dist_idx].TransformVector(position); 
+        barycentric = barycentric / (barycentric.X + barycentric.Y + barycentric.Z);
+
+        //UE_LOG(LogTemp, Warning, TEXT("Barycentric after normalized | Position: %f %f %f | ID: %d\n"), barycentric.X, barycentric.Y, barycentric.Z, max_dist_idx);
+
+
+        bool isOdd = max_dist_idx & 1;
+
+        FVector2D xy = FVector2D(
+            barycentric.Y + barycentric.Z * (isOdd),
+            barycentric.Z + barycentric.Y * (!isOdd)
+        );
+
+        EIcosID faceID = static_cast<EIcosID>(max_dist_idx / 2 + 1);
+        xy.X = std::round(xy.X * N_divisions);
+        xy.Y = std::round(xy.Y * N_divisions);
+
+        //UE_LOG(LogTemp, Warning, TEXT("Barycentric before correct: %d | Position: %f %f | N_division: %d\n"), static_cast<int>(faceID), xy.X, xy.Y, N_divisions);
+
+        FIcosaVertexNeighbourConversion::correctCoordinate(FIcosaPentCoord(faceID), faceID, xy, N_divisions);
+
+        return FIcosaPointCoord(faceID, xy.X, xy.Y, N_divisions);
+    }
+
+    FVector w_position() const
+    {
+        if (static_cast<int>(this->coord.id) == -1)
+            return FVector::Zero();
+        return computeCoordinate();
+    }
+
+
+    FVector computeCoordinate() const
+    {
 
         EIcosID otherDir;
-        
+
         FVector X_dir;
         FVector Y_dir;
-        
+
         if (X <= Y) {
             otherDir = upRight;
 
@@ -576,12 +709,12 @@ struct FIcosaPointCoord
             X_dir = (ALL_COORDINATES[static_cast<int>(otherDir)] - ALL_COORDINATES[static_cast<int>(coord.id)]);
             Y_dir = (ALL_COORDINATES[static_cast<int>(right)] - ALL_COORDINATES[static_cast<int>(otherDir)]);
         }
-        
+
 
         /*
         //UE_LOG(LogTemp, Warning, TEXT("face: %d | X: %f | Y: %f | N_division: %f | otherDir: %d | right: %d | coord: %d\n"),
             static_cast<int>(coord.id),
-            static_cast<double>(X), 
+            static_cast<double>(X),
             static_cast<double>(Y),
             static_cast<double>(N_division), static_cast<int>(otherDir), static_cast<int>(right),
             static_cast<int>(coord.id)
@@ -601,13 +734,13 @@ struct FIcosaPointCoord
             static_cast<double>(N_division),
             static_cast<double>(X) / static_cast<double>(N_division)
         );
-       
+
         FVector ret = ALL_COORDINATES[coord.id] +
             (static_cast<double>(X) / static_cast<double>(N_division)) * (ALL_COORDINATES[static_cast<int>(otherDir)] - ALL_COORDINATES[static_cast<int>(coord.id)]);
 
         //UE_LOG(LogTemp, Warning, TEXT("[%f %f %f] + %f * [%f %f %f] = [%f %f %f]\n"),
             ALL_COORDINATES[coord.id].X, ALL_COORDINATES[coord.id].Y, ALL_COORDINATES[coord.id].Z,
-            
+
             static_cast<double>(X) / static_cast<double>(N_division),
 
             (ALL_COORDINATES[static_cast<int>(otherDir)] - ALL_COORDINATES[static_cast<int>(coord.id)]).X,
@@ -623,8 +756,59 @@ struct FIcosaPointCoord
             (static_cast<double>(X) / static_cast<double>(N_division)) * X_dir +
             (static_cast<double>(Y) / static_cast<double>(N_division)) * Y_dir;
     }
-};
 
+    std::size_t Hash() const noexcept
+    {
+        return this->hashCached;
+    }
+
+    std::size_t ComputeHash()
+    {
+        auto h1 = std::hash<int>{}(X);
+        auto h2 = std::hash<int>{}(Y);
+        auto h3 = std::hash<int>{}(N_division);
+        auto h4 = std::hash<int>{}(static_cast<int>(coord.id));
+        std::size_t seed = h1;
+        seed ^= h2 + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+        seed ^= h3 + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+        seed ^= h4 + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+    // nested hasher functor
+    struct Hasher
+    {
+        std::size_t operator()(FIcosaPointCoord const& T) const noexcept
+        {
+            return T.Hash();
+        }
+
+        bool operator()(FIcosaPointCoord const& p1, FIcosaPointCoord const& p2)
+        {
+            // return "true" if "p1" is ordered
+            // before "p2", for example:
+            return p1 < p2;
+        }
+    };
+};
+// Pull in the std namespace to specialize hash
+namespace std {
+    template<>
+    struct hash<FIcosaPointCoord>
+    {
+        size_t operator()(FIcosaPointCoord const& K) const noexcept
+        {
+            auto h1 = std::hash<int>{}(K.X);
+            auto h2 = std::hash<int>{}(K.Y);
+            auto h3 = std::hash<int>{}(K.N_division);
+            auto h4 = std::hash<int>{}(static_cast<int>(K.coord.id));
+            std::size_t seed = h1;
+            seed ^= h2 + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+            seed ^= h3 + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+            seed ^= h4 + 0x9e3779b97f4a7c15ULL + (seed << 6) + (seed >> 2);
+            return seed;
+        }
+    };
+}
 
 struct FIcosaPoint
 {
@@ -648,75 +832,90 @@ struct FIcosaPoint
         this->hexVertices = new TArray<FVector>;
         this->neighbourVertices = new TArray<FVector>;
 
-        this->getNeighbours();
-        this->getFaceCoordinates();
+        this->setNeighboursCoordinates();
+        this->setHexFaceCoordinates();
     }
 
     FIcosaPoint(EIcosID id, int x, int y, int N_division)
         : FIcosaPoint(id, FVector2D(x, y), N_division)
-    { }
+    {}
 
-    void getNeighbours() {
-    /*
-        *   This function computes 3D Vector coordinates of
-        */
+    FIcosaPoint(FIcosaPointCoord coord)
+        : FIcosaPoint(coord.coord.id, coord.X, coord.Y, coord.N_division)
+    {}
 
-        
+    TArray<FIcosaPointCoord> getNeighbours()
+    {
+        TArray<FIcosaPointCoord> neighbours;
+
         if (this->pointCoord.coord.id == EIcosID::ID_NORTH_POLE) {
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_FIRST_FACE, 0, this->pointCoord.N_division - 1, this->pointCoord.N_division).w_position);
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_SECOND_FACE, 0, this->pointCoord.N_division-1, this->pointCoord.N_division).w_position);
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_THIRD_FACE, 0, this->pointCoord.N_division-1, this->pointCoord.N_division).w_position);
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_FOURTH_FACE, 0, this->pointCoord.N_division-1, this->pointCoord.N_division).w_position);
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_FIFTH_FACE, 0, this->pointCoord.N_division-1, this->pointCoord.N_division).w_position);
-            return;
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_FIRST_FACE, 0, this->pointCoord.N_division - 1, this->pointCoord.N_division));
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_SECOND_FACE, 0, this->pointCoord.N_division - 1, this->pointCoord.N_division));
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_THIRD_FACE, 0, this->pointCoord.N_division - 1, this->pointCoord.N_division));
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_FOURTH_FACE, 0, this->pointCoord.N_division - 1, this->pointCoord.N_division));
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_FIFTH_FACE, 0, this->pointCoord.N_division - 1, this->pointCoord.N_division));
+            return neighbours;
         }
         if (this->pointCoord.coord.id == EIcosID::ID_SOUTH_POLE) {
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_TENTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division).w_position);
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_NINTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division).w_position);
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_EIGHTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division).w_position);
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_SEVENTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division).w_position);
-            this->neighbourVertices->Add(FIcosaPointCoord(EIcosID::ID_SIXTH_FACE, this->pointCoord.N_division-1, 0, this->pointCoord.N_division).w_position);
-            return;
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_TENTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division));
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_NINTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division));
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_EIGHTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division));
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_SEVENTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division));
+            neighbours.Add(FIcosaPointCoord(EIcosID::ID_SIXTH_FACE, this->pointCoord.N_division - 1, 0, this->pointCoord.N_division));
+            return neighbours;
         }
-        
-        TArray<FIcosaPointCoord> neighbours;
 
         neighbours.Add(upNeighbour());
         auto elem = neighbours[0];
-        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (up): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position.X, elem.w_position.Y, elem.w_position.Z);
+        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (up): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position().X, elem.w_position().Y, elem.w_position().Z);
 
         neighbours.Add(leftNeighbour());
         elem = neighbours[1];
-        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (left): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position.X, elem.w_position.Y, elem.w_position.Z);
+        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (left): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position().X, elem.w_position().Y, elem.w_position().Z);
 
 
         neighbours.Add(downLeftNeighbour());
         elem = neighbours[2];
-        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (downLeft): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position.X, elem.w_position.Y, elem.w_position.Z);
+        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (downLeft): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position().X, elem.w_position().Y, elem.w_position().Z);
 
 
 
         neighbours.Add(downNeighbour());
         elem = neighbours[3];
-        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (down): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position.X, elem.w_position.Y, elem.w_position.Z);
+        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (down): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position().X, elem.w_position().Y, elem.w_position().Z);
 
         neighbours.Add(rightNeighbour());
         elem = neighbours[4];
-        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (right): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position.X, elem.w_position.Y, elem.w_position.Z);
+        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (right): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position().X, elem.w_position().Y, elem.w_position().Z);
 
 
         neighbours.Add(upRightNeighbour());
         elem = neighbours[5];
-        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (upRight): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position.X, elem.w_position.Y, elem.w_position.Z);
+        //UE_LOG(LogTemp, Warning, TEXT("neigh 2D (upRight): %d | %d %d | 3D: %f | %f | %f\n"), elem.coord.id, elem.X, elem.Y, elem.w_position().X, elem.w_position().Y, elem.w_position().Z);
+
+        //Important!
+        for (int32 i = neighbours.Num() - 1; i >= 0; --i)
+        {
+            if (neighbours[i].coord.id == EIcosID::ID_EMPTY)
+            {
+                neighbours.RemoveAt(i);
+            }
+        }
 
 
+        return neighbours;
+    }
 
-         
+
+    void setNeighboursCoordinates() {
+        auto neighbours = this->getNeighbours();
+
+
         for (const auto& elem2 : neighbours) {
             if (elem2.coord.id == EIcosID::ID_EMPTY)
                 continue;
-            //UE_LOG(LogTemp, Warning, TEXT("neigh 2D: %d | %d %d | 3D: %f | %f | %f\n"), elem2.coord.id, elem2.X, elem2.Y, elem2.w_position.X, elem2.w_position.Y, elem2.w_position.Z);
-            this->neighbourVertices->Add(elem2.w_position);
+            //UE_LOG(LogTemp, Warning, TEXT("neigh 2D: %d | %d %d | 3D: %f | %f | %f\n"), elem2.coord.id, elem2.X, elem2.Y, elem2.w_position().X, elem2.w_position().Y, elem2.w_position().Z);
+            this->neighbourVertices->Add(elem2.w_position());
         }
 
     }
@@ -754,7 +953,7 @@ struct FIcosaPoint
         //}
         return FIcosaPointCoord(neigh_id, neigh_XY, this->pointCoord.N_division);
     }
-    
+
     FIcosaPointCoord downNeighbour() {
         int neigh_X = this->pointCoord.X;
         int neigh_Y = this->pointCoord.Y - 1;
@@ -793,7 +992,7 @@ struct FIcosaPoint
 
 
         if (neigh_X == -1) {
-            //UE_LOG(LogTemp, Warning, TEXT("Corner case: %d | %d %d | \n"), 
+            //UE_LOG(LogTemp, Warning, TEXT("Corner case: %d | %d %d | \n"),
                 this->pointCoord.coord.id,
                 neigh_X, neigh_Y);
 
@@ -807,13 +1006,13 @@ struct FIcosaPoint
                 neigh_id = FIcosaPentCoord(neigh_id).upLeft();
             }
             if (neigh_level == EIcosLevel::L_FIRST_RING) {
-                
+
                 neigh_id = FIcosaPentCoord(neigh_id).left();
 
                 //UE_LOG(LogTemp, Warning, TEXT("It is first ring, using left neighbour IcosaFace! orig: %d -> left: %d \n"),
                     static_cast<int>(this->pointCoord.coord.id),
                     static_cast<int>(neigh_id));
-            
+
             }
             neigh_X = this->pointCoord.N_division - neigh_Y - 1;
             neigh_Y = this->pointCoord.N_division - 1;
@@ -865,8 +1064,8 @@ struct FIcosaPoint
     FIcosaPointCoord downLeftNeighbour() { // Hard
         int neigh_X = this->pointCoord.X - 1;
         int neigh_Y = this->pointCoord.Y - 1;
-        
-        
+
+
         //if (0 == neigh_Y) {
         //    // IDK
         //}
@@ -882,8 +1081,8 @@ struct FIcosaPoint
         return FIcosaPointCoord(neigh_id, neigh_XY, this->pointCoord.N_division);
     }
 
-    void getFaceCoordinates() {
-        FVector& me = this->pointCoord.w_position;
+    void setHexFaceCoordinates() {
+        FVector me = this->pointCoord.w_position();
 
         for (int i = 0; i < neighbourVertices->Num(); i++) { // need to have a specific ordering! CW!
 
@@ -898,6 +1097,50 @@ struct FIcosaPoint
             //hexVertices->Add(elem); // TODO remove
         }
     }
+
+
+    std::set<FIcosaPointCoord> getNeighbourRadius(uint32_t N_radius)
+    {
+        std::unordered_set<FIcosaPointCoord> visited;
+        std::set<FIcosaPointCoord> result;
+
+        visited.insert(this->pointCoord);
+        result.insert(this->pointCoord);
+        //UE_LOG(LogTemp, Warning, TEXT("Adding pointCoord: %d | %d %d\n"), this->pointCoord.coord.id, this->pointCoord.X, this->pointCoord.Y);
+
+        if (N_radius == 0) return result;
+
+        std::queue<std::pair<FIcosaPointCoord, uint32_t>> frontier;
+        
+        frontier.push({ this->pointCoord, 0 });
+
+        
+        while (!frontier.empty())
+        {
+            auto [key, depth] = frontier.front();
+            frontier.pop();
+
+            if (depth >= N_radius)
+                continue;
+
+            auto point = FIcosaPoint(key);
+
+            for (auto& nei : point.getNeighbours())
+            {
+                // if not visited yet
+                if (visited.insert(nei).second)
+                {
+                    result.insert(nei);
+                    frontier.push({ nei, depth + 1 });
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+
 };
 
 struct FHexGridRenderData
@@ -910,7 +1153,7 @@ struct FHexGridRenderData
 
     TArray<FVector> Normals;
     TArray<int32> Triangles;
-    
+
     TArray<FVector2D> UVs;
     TArray<FColor> colors;
 
@@ -918,7 +1161,7 @@ struct FHexGridRenderData
 };
 
 /**
- * 
+ *
  */
 class LOGOS_API SphereIcosaMeshGenerator
 {
@@ -938,28 +1181,94 @@ public:
 
     ~SphereIcosaMeshGenerator() {}
 
+    FHexGridRenderData generateHexagon(FIcosaPointCoord key)
+    {
+        return generateHexagon(key.coord.id, key.X, key.Y);
+    }
+
     FHexGridRenderData generateHexagon(int faceID, int x, int y)
     {
         FHexGridRenderData ret;
-
-
-        //UE_LOG(LogTemp, Warning, TEXT("face: %d | x: %d | y: %d\n"), faceID, x, y);
-
         FIcosaPoint hexObject(static_cast<EIcosID>(faceID), x, y, this->N_DIVISIONS);
 
+        convert(hexObject, ret);
+
+        //return generateHexagonRadius(faceID, x, y, 0)[0];
+        return ret;
+    }
+    /*
+    TArray<FHexGridRenderData> generateHexagonRadius(int faceID, int x, int y, uint32_t N_radius)
+    {
+        TArray<FHexGridRenderData> ret;
+
+        //std::unordered_map<FIcosaPointCoord, FHexGridRenderData> ret;
+
+        FIcosaPoint hexObject(static_cast<EIcosID>(faceID), x, y, this->N_DIVISIONS);
+        auto neighs = hexObject.getNeighbourRadius(N_radius);
+
+        ret.SetNum(neighs.size() + 1);
+        convert(hexObject, ret[0]);
+
+
+        auto it = neighs.begin();
+        for (int j = 0; j < neighs.size(); j++)
+        {
+            auto& Nei = *it;
+            FIcosaPoint neighObject(Nei);
+            convert(hexObject, ret[j+1]);
+            ++it;
+        }
+
+        return ret;
+    }
+    */
+
+
+    FVector scaleToRadius(const FVector& icosaVec)
+    {
+        //UE_LOG(LogTemp, Warning, TEXT("scale in: %f | %f | %f\n"), icosaVec.X, icosaVec.Y, icosaVec.Z);
+        //UE_LOG(LogTemp, Warning, TEXT("RADIUS USED: %f\n"), this->RADIUS);
+        //UE_LOG(LogTemp, Warning, TEXT("GetSafeNormal: %f | %f | %f\n"), icosaVec.GetSafeNormal().X, icosaVec.GetSafeNormal().Y, icosaVec.GetSafeNormal().Z);
+
+        FVector ret = icosaVec.GetSafeNormal() * this->RADIUS;
+        //UE_LOG(LogTemp, Warning, TEXT("ret: %f | %f | %f\n"), ret.X, ret.Y, ret.Z);
+
+        return ret;
+    }
+
+    FVector scaleToHeightmap(const FVector& icosaVec, const FVector2D& uv)
+    {
+        //UE_LOG(LogTemp, Warning, TEXT("scale in: %f | %f | %f\n"), icosaVec.X, icosaVec.Y, icosaVec.Z);
+        //UE_LOG(LogTemp, Warning, TEXT("RADIUS USED: %f\n"), this->RADIUS);
+        //UE_LOG(LogTemp, Warning, TEXT("GetSafeNormal: %f | %f | %f\n"), icosaVec.GetSafeNormal().X, icosaVec.GetSafeNormal().Y, icosaVec.GetSafeNormal().Z);
+
+        FVector ret = icosaVec.GetSafeNormal() * this->RADIUS;
+        //UE_LOG(LogTemp, Warning, TEXT("ret: %f | %f | %f\n"), ret.X, ret.Y, ret.Z);
+
+        if (this->HEIGHTMAP_UV == nullptr) return ret;
+
+        double factor = this->HEIGHTMAP_UV->SampleBilinear(uv.X, uv.Y);
+        //UE_LOG(LogTemp, Warning, TEXT("factor: %f | UV: %f , %f\n"), factor, uv.X, uv.Y);
+        return icosaVec.GetSafeNormal() * (this->RADIUS + factor * this->HEIGHT_ABOVE_RADIUS);
+    }
+
+
+protected:
+    FHexGridRenderData convert(FIcosaPoint& hexObject, FHexGridRenderData& ret)
+    {
         auto hexVertices = hexObject.hexVertices;
 
 
         TArray<FVector2D> UVs_before;
 
-        //UE_LOG(LogTemp, Warning, TEXT("center before scale: %f | %f | %f\n"), hexObject.pointCoord.w_position.X, hexObject.pointCoord.w_position.Y, hexObject.pointCoord.w_position.Z);
-        FVector center = scaleToRadius(hexObject.pointCoord.w_position);
+        //UE_LOG(LogTemp, Warning, TEXT("center before scale: %f | %f | %f\n"), hexObject.pointCoord.w_position().X, hexObject.pointCoord.w_position().Y, hexObject.pointCoord.w_position().Z);
+        FVector center = scaleToRadius(hexObject.pointCoord.w_position());
         //UE_LOG(LogTemp, Warning, TEXT("center after scale: %f | %f | %f\n"), center.X, center.Y, center.Z);
 
 
 
         ret.Vertices.Add(center);
-        //ret.Vertices.Add(hexObject.pointCoord.w_position); // TODO remove
+        //ret.Vertices.Add(hexObject.pointCoord.w_position()); // TODO remove
         ret.Normals.Add(center.GetSafeNormal());
         UVs_before.Add(transformSphericalUV(center));
 
@@ -1035,8 +1344,7 @@ public:
 
         FString type = hexVertices->Num() == 6 ? "Hexagon" : "Pentagon";
 
-        ret.name = FString::Printf(TEXT("%s_face%d_x:%d_y:%d"),
-            *type, faceID, x, y);
+        ret.name = FString::Printf(TEXT("%s_face%d_x:%d_y:%d"), *type, static_cast<int>(hexObject.pointCoord.coord.id), hexObject.pointCoord.X, hexObject.pointCoord.Y);
 
 
 
@@ -1061,53 +1369,23 @@ public:
          ret.IcosaVertices.Add(ALL_COORDINATES[7].GetSafeNormal() * this->RADIUS);*/
 
 
-         //ret.Vertices.Add(FIcosaPointCoord(ID_FIRST_FACE, 0, 0, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
-         //ret.Vertices.Add(FIcosaPointCoord(ID_NORTH_POLE, 0, 0, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
-         //ret.Vertices.Add(FIcosaPointCoord(ID_SECOND_FACE, 0, 0, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
+         //ret.Vertices.Add(FIcosaPointCoord(ID_FIRST_FACE, 0, 0, this->N_DIVISIONS).w_position().GetSafeNormal() * this->RADIUS);
+         //ret.Vertices.Add(FIcosaPointCoord(ID_NORTH_POLE, 0, 0, this->N_DIVISIONS).w_position().GetSafeNormal() * this->RADIUS);
+         //ret.Vertices.Add(FIcosaPointCoord(ID_SECOND_FACE, 0, 0, this->N_DIVISIONS).w_position().GetSafeNormal() * this->RADIUS);
 
          /*
          for (int xi = 0; xi < 4; xi++) {
              for (int yi = 0; yi < 4; yi++) {
-                 ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIRST_FACE, xi, yi, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
-                 ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIFTH_FACE, xi, yi, this->N_DIVISIONS).w_position.GetSafeNormal() * this->RADIUS);
+                 ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIRST_FACE, xi, yi, this->N_DIVISIONS).w_position().GetSafeNormal() * this->RADIUS);
+                 ret.AllChunkVertices.Add(FIcosaPointCoord(ID_FIFTH_FACE, xi, yi, this->N_DIVISIONS).w_position().GetSafeNormal() * this->RADIUS);
              }
          }
          */
 
-        ret.name = FString::Printf(TEXT("%d_%d_%d"),
-            static_cast<int32>(faceID), x, y);
+        ret.name = FString::Printf(TEXT("%d_%d_%d"), static_cast<int32>(hexObject.pointCoord.coord.id), hexObject.pointCoord.X, hexObject.pointCoord.Y);
 
         return ret;
     }
-
-    FVector scaleToRadius(const FVector& icosaVec)
-    {
-        //UE_LOG(LogTemp, Warning, TEXT("scale in: %f | %f | %f\n"), icosaVec.X, icosaVec.Y, icosaVec.Z);
-        //UE_LOG(LogTemp, Warning, TEXT("RADIUS USED: %f\n"), this->RADIUS);
-        //UE_LOG(LogTemp, Warning, TEXT("GetSafeNormal: %f | %f | %f\n"), icosaVec.GetSafeNormal().X, icosaVec.GetSafeNormal().Y, icosaVec.GetSafeNormal().Z);
-
-        FVector ret = icosaVec.GetSafeNormal() * this->RADIUS;
-        //UE_LOG(LogTemp, Warning, TEXT("ret: %f | %f | %f\n"), ret.X, ret.Y, ret.Z);
-
-        return ret;
-    }
-
-    FVector scaleToHeightmap(const FVector& icosaVec, const FVector2D& uv)
-    {
-        //UE_LOG(LogTemp, Warning, TEXT("scale in: %f | %f | %f\n"), icosaVec.X, icosaVec.Y, icosaVec.Z);
-        //UE_LOG(LogTemp, Warning, TEXT("RADIUS USED: %f\n"), this->RADIUS);
-        //UE_LOG(LogTemp, Warning, TEXT("GetSafeNormal: %f | %f | %f\n"), icosaVec.GetSafeNormal().X, icosaVec.GetSafeNormal().Y, icosaVec.GetSafeNormal().Z);
-
-        FVector ret = icosaVec.GetSafeNormal() * this->RADIUS;
-        //UE_LOG(LogTemp, Warning, TEXT("ret: %f | %f | %f\n"), ret.X, ret.Y, ret.Z);
-
-        if (this->HEIGHTMAP_UV == nullptr) return ret;
-
-        double factor = this->HEIGHTMAP_UV->SampleBilinear(uv.X, uv.Y);
-        //UE_LOG(LogTemp, Warning, TEXT("factor: %f | UV: %f , %f\n"), factor, uv.X, uv.Y);
-        return icosaVec.GetSafeNormal() * (this->RADIUS + factor * this->HEIGHT_ABOVE_RADIUS);
-    }
-
 
 protected:
     const double RADIUS;

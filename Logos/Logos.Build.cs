@@ -39,7 +39,11 @@ public class Logos : ModuleRules
         });
 
         PrivateDependencyModuleNames.AddRange(new string[] { "ProceduralMeshComponent" }); // added
-
+        if (Target.bBuildEditor)
+        {
+            PrivateDependencyModuleNames.Add("UnrealEd");
+            PrivateDependencyModuleNames.Add("EditorStyle");
+        }
         // Uncomment if you are using Slate UI
         // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 

@@ -23,10 +23,25 @@ inline static FVector2D transformSphericalUV(const FVector& xyz)
     ret.X = uv_neigh.Y / (-2.0 * A_PI) + 0.5;
     return ret;
 }
-inline static double access2DimArray(const double* arr, int x, int y)
+inline static FMatrix constructMatrix(const FVector& X, const FVector& Y, const FVector& Z)
 {
+    FMatrix A = FMatrix::Identity;
+    A.M[0][0] = X.X;
+    A.M[0][1] = X.Y;
+    A.M[0][2] = X.Z;
 
+    A.M[1][0] = Y.X;
+    A.M[1][1] = Y.Y;
+    A.M[1][2] = Y.Z;
+
+    A.M[2][0] = Z.X;
+    A.M[2][1] = Z.Y;
+    A.M[2][2] = Z.Z;
+
+    return A;
 }
+
+
 
 template<typename T>
 struct TArray2D
@@ -76,7 +91,7 @@ struct TArray2D
 
     T SampleBilinear(double U, double V) const
     {
-        UE_LOG(LogTemp, Warning, TEXT("SampleBilinear: U: %f | V %f\n"), U, V);
+        //UE_LOG(LogTemp, Warning, TEXT("SampleBilinear: U: %f | V %f\n"), U, V);
         if (Width == 0 || Height == 0 || Data.Num() == 0)
         {
             return 0.0;
