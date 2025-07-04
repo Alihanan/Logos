@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include <Kismet/KismetMathLibrary.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -36,16 +37,35 @@ ALogosCharacter::ALogosCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
+
+	RootCamera = CreateDefaultSubobject<USceneComponent>(TEXT("Camera Root"));
+	RootCamera->SetupAttachment(RootComponent);
+
+	MoveRefRoot = CreateDefaultSubobject<USceneComponent>(TEXT("Move Ref Root"));
+	MoveRefRoot->SetupAttachment(RootCamera);
+
+	SphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ForwardLookDirection"));
+	SphereComponent->SetStaticMesh(nullptr);
+	SphereComponent->SetupAttachment(MoveRefRoot);
+	SphereComponent->SetRelativeLocation(FVector(500.0f, 0.0f, 0.0f));
+
+
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->SetupAttachment(RootCamera);
 	CameraBoom->TargetArmLength = 400.0f;
 	CameraBoom->bUsePawnControlRotation = true;
+
+
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+
+	this->GetCharacterMovement()->bIgnoreBaseRotation = true; // IDK, but tutorial had this
+
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -100,10 +120,16 @@ void ALogosCharacter::DoMove(float Right, float Forward)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+
+		const FVector actorLoc = this->GetActorLocation();
+		const FVector moveRefLoc = this->SphereComponent->GetComponentLocation();
+
+		const FVector ForwardDirection = UKismetMathLibrary::GetDirectionUnitVector(actorLoc, moveRefLoc);
+		//const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
 		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		//const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		const FVector RightDirection = this->FollowCamera->GetRightVector();
 
 		// add movement 
 		AddMovementInput(ForwardDirection, Forward);

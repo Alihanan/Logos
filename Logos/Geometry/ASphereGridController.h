@@ -52,6 +52,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UTexture2D* heightmapTexture = nullptr;
 
+
+	UPROPERTY(EditAnywhere)
+	FVector currentPlayerLocation;
+
 	TArray2D<double> heightmapData;
 	
 protected:

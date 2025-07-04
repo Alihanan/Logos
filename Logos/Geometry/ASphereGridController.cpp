@@ -183,9 +183,10 @@ static FVector GetCameraLocation(UWorld* WorldContext)
 	// Otherwise, assume we have a real PlayerController + CameraManager
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContext, 0))
 	{
-		if (PC->PlayerCameraManager)
+		// If the controller is possessing a Pawn, return its location
+		if (APawn* Pawn = PC->GetPawn())
 		{
-			return PC->PlayerCameraManager->GetCameraLocation();
+			return Pawn->GetActorLocation();
 		}
 	}
 
@@ -277,7 +278,10 @@ void AASphereGridController::Tick(float DeltaTime)
 
 	//FVector playerLoc = this->player->GetActorLocation();
 	
+	
 	FVector playerLoc = GetCameraLocation(GetWorld());
+
+	this->currentPlayerLocation = playerLoc;
 
 	// Some mistake, do not try to render!
 	if (playerLoc.IsZero())
