@@ -5,11 +5,16 @@
 #include "Editor.h"
 #include "EditorViewportClient.h"
 #endif
+
 #include "Geometry/ASphereGridController.h"
+
 #include <sstream>
 #include <set>
 #include <Kismet/GameplayStatics.h>
 #include "GameFramework/SpectatorPawn.h"
+#include <EngineUtils.h>
+
+
 
 // Sets default values
 AASphereGridController::AASphereGridController()
@@ -22,9 +27,6 @@ AASphereGridController::AASphereGridController()
 // Called when the game starts or when spawned
 void AASphereGridController::BeginPlay()
 {
-	Super::BeginPlay();
-
-	
 	if (!GetWorld() || !GetWorld()->IsGameWorld())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Empty world, skip!\n"));
@@ -56,7 +58,10 @@ void AASphereGridController::BeginPlay()
 	this->N_divisions = pow(2, this->NUM_SUBDIVIDE);
 	//this->generatorMesh = new SphereIcosaMeshGenerator(this->RADIUS, N_divisions, );
 	this->generatorMesh = new SphereIcosaMeshGenerator(this->RADIUS, N_divisions, &(this->heightmapData), HEIGHT_ABOVE_RADIUS);
-	
+	this->chunkTrackingSystem = ChunkTrackingSystem(this);
+
+	Super::BeginPlay();
+
 	/*
 	for (int f = 1; f < 11; f++) 
 	{
@@ -108,7 +113,12 @@ void AASphereGridController::BeginPlay()
 	*/
 }
 
+FIcosaPointCoord AASphereGridController::ConvertLocationToIcosaCoord(FVector playerLocation)
+{
+	auto point = FIcosaPointCoord::convertPositionToIcosaPoint(playerLocation, this->N_divisions);
 
+	return point;
+}
 
 void AASphereGridController::InitializeHeightmap()
 {
@@ -155,6 +165,28 @@ void AASphereGridController::InitializeHeightmap()
 	}
 
 	Mip.BulkData.Unlock();
+}
+
+#if WITH_EDITOR
+void AASphereGridController::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	// Only respond when Exponent itself was edited
+	static const FName ExponentName = GET_MEMBER_NAME_CHECKED(AASphereGridController, NUM_SUBDIVIDE);
+	if (PropertyChangedEvent.Property
+		&& PropertyChangedEvent.Property->GetFName() == ExponentName)
+	{
+		this->N_divisions = GetPowerOfTwo();
+	}
+}
+#endif
+
+void AASphereGridController::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+	this->N_divisions = GetPowerOfTwo();
 }
 
 
@@ -209,7 +241,7 @@ void AASphereGridController::UpdateChunks(std::set<FIcosaPointCoord>& toAdd)
 		{
 			FHexGridRenderData data = this->generatorMesh->generateHexagon(C);
 			NewActor->setMaterial(this->material);
-			NewActor->parametrize(data);
+			//NewActor->parametrize(data, C);
 		}
 		return NewActor;
 		};
@@ -262,13 +294,39 @@ void AASphereGridController::UpdateChunks(std::set<FIcosaPointCoord>& toAdd)
 	}
 }
 
+ASphereGridTile* AASphereGridController::CreateIcosaTile(FIcosaPointCoord icosaCoord)
+{
+	if (icosaCoord.coord.id == EIcosID::ID_EMPTY)
+		return nullptr;
+
+	auto spawnParams = FActorSpawnParameters();
+	spawnParams.Owner = this;
+
+
+	ASphereGridTile* NewActor = GetWorld()->SpawnActor<ASphereGridTile>(ASphereGridTile::StaticClass(),
+		GetActorLocation(),
+		GetActorRotation(),
+		spawnParams
+	);
+	if (!NewActor)
+		return nullptr;
+
+	//NewActor->tileIcosaPoint = icosaCoord;
+	NewActor->parametrize(icosaCoord);
+
+	//FHexGridRenderData data = this->generatorMesh->generateHexagon(icosaCoord);
+	//NewActor->setMaterial(this->material);
+	//NewActor->parametrize(data, icosaCoord);
+	
+	return NewActor;
+}
 
 // Called every frame
 void AASphereGridController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
+	/*
 	this->totalTime += DeltaTime;
 
 	//if (totalTime < 10.0) {
@@ -316,5 +374,28 @@ void AASphereGridController::Tick(float DeltaTime)
 	std::set<FIcosaPointCoord> toAddKeys = FIcosaPoint(point).getNeighbourRadius(this->RADIUS_CHUNK);
 
 	this->UpdateChunks(toAddKeys);
+	*/
 }
 
+bool AASphereGridController::UpdateChunksTimerCall()
+{
+	TArray<ALogosCharacter*> Players;
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (APlayerController* PC = It->Get())
+		{
+			if (APawn* Pawn = PC->GetPawn())
+			{
+				if (ALogosCharacter* Char = Cast<ALogosCharacter>(Pawn))
+				{
+					Players.Add(Char);
+				}
+			}
+		}
+	}
+
+	this->chunkTrackingSystem.ToggleUpdateAllPlayers(Players);
+
+	return false;
+}

@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include <Kismet/KismetMathLibrary.h>
+#include <SphereIcosaMeshGenerator.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -72,6 +73,43 @@ ALogosCharacter::ALogosCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
+
+bool ALogosCharacter::HasChangedPosition()
+{
+	FVector loc = this->GetActorLocation();
+
+	if (loc.Equals(this->previousPosition))
+	{
+		return false;
+	}
+
+	this->previousPosition = loc;
+	return true;
+}
+
+bool ALogosCharacter::IsNetRelevantFor(const AActor* RealViewer, const AActor* ViewTarget, const FVector& SrcLocation) const
+{
+	CA_SUPPRESS(6011);
+
+	
+	
+	if (const APlayerController* Player = Cast<APlayerController>(RealViewer))
+	{
+
+		FVector playerLoc = ViewTarget->GetActorLocation();
+		auto point = FIcosaPointCoord::convertPositionToIcosaPoint(playerLoc);
+
+		auto pointMe = FIcosaPointCoord::convertPositionToIcosaPoint(this->GetActorLocation());
+		
+
+		if (point.IsNeighbouring(pointMe)) 
+		{
+			return Super::IsNetRelevantFor(RealViewer, ViewTarget, SrcLocation);
+		}
+	}
+	return false;
+}
+
 
 void ALogosCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {

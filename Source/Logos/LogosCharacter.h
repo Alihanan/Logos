@@ -65,7 +65,18 @@ public:
 	/** Constructor */
 	ALogosCharacter();	
 
+	bool HasChangedPosition();
+
+	virtual bool IsNetRelevantFor
+	(
+		const AActor* RealViewer,
+		const AActor* ViewTarget,
+		const FVector& SrcLocation
+	) const override;
+
 protected:
+
+	FVector previousPosition = FVector(-9999999999999999999999.0, 0, 0);
 
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

@@ -12,6 +12,7 @@
 class UProceduralMeshComponent;
 //class SphereIcosaMeshGenerator;
 
+
 UCLASS()
 class LOGOS_API ASphereGridTile : public AActor
 {
@@ -22,14 +23,40 @@ public:
 	ASphereGridTile();
 	~ASphereGridTile() {}
 
-	void parametrize(const FHexGridRenderData& data);
+	void parametrize(FIcosaPointCoord tileCoord);
 	void setMaterial(UMaterialInterface* material);
+
+	virtual bool IsNetRelevantFor
+	(
+		const AActor* RealViewer,
+		const AActor* ViewTarget,
+		const FVector& SrcLocation
+	) const override;
+
+
+	UPROPERTY(ReplicatedUsing = OnRep_GenerateHexagon)
+	FIcosaPointCoord tileIcosaPoint = FIcosaPointCoord(EIcosID::ID_EMPTY, 0, 0, 4);
+
+	UFUNCTION()
+	void OnRep_GenerateHexagon();
+
+	TArray<FIcosaPointCoord> releventChunkPositions;
+
+	SphereIcosaMeshGenerator* generatorMesh;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	void initialize();
+	void CreateProceduralComponent();
+
+	virtual void OnRep_Owner() override;
+
+	void ExtractParametersFromOwner();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
+
 	UProceduralMeshComponent* proceduralMesh;
 
 	UMaterialInterface* material = nullptr;
@@ -38,13 +65,15 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FVector2D> UVs;
 
+	UPROPERTY(EditAnywhere)
+	TArray<int32> Triangles;
+
 	UPROPERTY(EditAnywhere, Meta = (MakeEditWidget = true))
 	TArray<FVector> Vertices;
 
 
 
 	//SphereIcosaMeshGenerator* generatorMesh;
-
 
 
 public:	
