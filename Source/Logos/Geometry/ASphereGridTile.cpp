@@ -160,6 +160,21 @@ void ASphereGridTile::ExtractParametersFromOwner()
 	}
 }
 
+void ASphereGridTile::ReGenerateLocalComponentAndHexagon()
+{
+}
+
+void ASphereGridTile::DestroyLocalComponentAndHexagon()
+{
+	if (this->proceduralMesh)
+	{
+		this->proceduralMesh->DestroyComponent();
+		this->proceduralMesh = nullptr;
+	}
+
+	this->Destroy();
+}
+
 
 void ASphereGridTile::parametrize(FIcosaPointCoord tileCoord)
 {
@@ -195,17 +210,15 @@ void ASphereGridTile::OnRep_GenerateHexagon()
 	UE_LOG(LogTemp, Warning, TEXT("Chunk [%d %d %d] has OnRep called!\n"), this->tileIcosaPoint.coord.id, this->tileIcosaPoint.X, this->tileIcosaPoint.Y);
 
 	bool isServer = this->HasAuthority();
-	if (isServer == false) {
-		int asd = 1;
-	}
+	
 
 	auto owner = this->GetOwner();
 	if (this->generatorMesh == nullptr)
 	{
-		int asd = 1;
+		// ???
 	}
 
-
+	this->releventChunkPositions.Empty();
 	this->releventChunkPositions.Add(this->tileIcosaPoint);
 	this->releventChunkPositions.Append(this->tileIcosaPoint.getNeighbours());
 

@@ -53,6 +53,9 @@ protected:
 
 	void ExtractParametersFromOwner();
 
+	void ReGenerateLocalComponentAndHexagon();
+	void DestroyLocalComponentAndHexagon();
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:

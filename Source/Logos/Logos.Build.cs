@@ -21,7 +21,7 @@ public class Logos : ModuleRules
 			"GameplayStateTreeModule",
 			"UMG",
 
-            "RHI", "RenderCore" // added
+            "RHI", "RenderCore", "ReplicationGraph" // added
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
