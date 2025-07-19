@@ -216,7 +216,9 @@ void ASphereGridTile::OnRep_GenerateHexagon()
 	this->Vertices = data.Vertices;
 	this->Triangles = data.Triangles;
 
-	SetActorLabel(data.name);
+#if WITH_EDITOR
+	this->SetActorLabel(data.name);
+#endif
 	SetActorLocation(FVector(0, 0, 0));
 
 	// Enable editor visibility

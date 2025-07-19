@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "Geometry/ASphereGridController.h"
 
 #if WITH_EDITOR
 #include "Editor.h"
 #include "EditorViewportClient.h"
 #endif
-
-#include "Geometry/ASphereGridController.h"
 
 #include <sstream>
 #include <set>
