@@ -1,0 +1,15 @@
+﻿  Compiling CUDA source file kernel.cu...
+  Compiling CUDA source file SimpleCudaKernel.cu...
+  
+  C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA>"C:\UnrealProjects\CUDA\bin\nvcc.exe" -gencode=arch=compute_75,code=\"sm_75,compute_75\" --use-local-env -ccbin "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\bin\HostX64\x64" -x cu   -IC:\UnrealProjects\CUDA\include -IC:\UnrealProjects\CUDA\include     --keep-dir x64\Release  -maxrregcount=0    --machine 64 --compile -cudart static    -DWIN32 -DWIN64 -DNDEBUG -D_CONSOLE -D_WINDLL -D_MBCS -Xcompiler "/EHsc /W3 /nologo /O2 /FS   /MD " -Xcompiler "/Fdx64\Release\vc143.pdb" -o C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA\x64\Release\SimpleCudaKernel.cu.obj "C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA\SimpleCudaKernel.cu" 
+  
+  C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA>"C:\UnrealProjects\CUDA\bin\nvcc.exe" -gencode=arch=compute_75,code=\"sm_75,compute_75\" --use-local-env -ccbin "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\bin\HostX64\x64" -x cu   -IC:\UnrealProjects\CUDA\include -IC:\UnrealProjects\CUDA\include     --keep-dir x64\Release  -maxrregcount=0    --machine 64 --compile -cudart static    -DWIN32 -DWIN64 -DNDEBUG -D_CONSOLE -D_WINDLL -D_MBCS -Xcompiler "/EHsc /W3 /nologo /O2 /FS   /MD " -Xcompiler "/Fdx64\Release\vc143.pdb" -o C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA\x64\Release\kernel.cu.obj "C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA\kernel.cu" 
+  kernel.cu
+  tmpxft_0000ded4_00000000-7_kernel.cudafe1.cpp
+  SimpleCudaKernel.cu
+  tmpxft_00000f88_00000000-7_SimpleCudaKernel.cudafe1.cpp
+     Creating library x64\Release\LenpartyaSimulationCUDA.lib and object x64\Release\LenpartyaSimulationCUDA.exp
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  LINK : /LTCG specified but no code generation required; remove /LTCG from the link command line to improve linker performance
+  LenpartyaSimulationCUDA.vcxproj -> C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA\x64\Release\LenpartyaSimulationCUDA.dll
+          1 file(s) copied.

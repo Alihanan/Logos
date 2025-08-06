@@ -1,0 +1,8 @@
+﻿  Compiling CUDA source file kernel.cu...
+  
+  C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA>"C:\UnrealProjects\CUDA\bin\nvcc.exe" -gencode=arch=compute_75,code=\"sm_75,compute_75\" --use-local-env -ccbin "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\bin\HostX64\x64" -x cu   -IC:\UnrealProjects\CUDA\include -IC:\UnrealProjects\CUDA\include  -G   --keep-dir x64\Debug  -maxrregcount=0    --machine 64 --compile -cudart static  -g  -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /FS /Zi /RTC1 /MDd " -Xcompiler "/Fdx64\Debug\vc143.pdb" -o C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA\x64\Debug\kernel.cu.obj "C:\UnrealProjects\Logos\Plugins\LenpartyaSimulationToolkit\Source\ThirdParty\LenpartyaSimulationCUDA\kernel.cu" 
+  kernel.cu
+  tmpxft_00008398_00000000-7_kernel.cudafe1.cpp
+     Creating library C:\UnrealProjects\Logos\x64\Debug\LenpartyaSimulationCUDA.lib and object C:\UnrealProjects\Logos\x64\Debug\LenpartyaSimulationCUDA.exp
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+  LenpartyaSimulationCUDA.vcxproj -> C:\UnrealProjects\Logos\x64\Debug\LenpartyaSimulationCUDA.exe

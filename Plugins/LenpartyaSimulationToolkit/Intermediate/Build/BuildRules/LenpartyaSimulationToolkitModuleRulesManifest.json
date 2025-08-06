@@ -1,0 +1,7 @@
+{
+	"SourceFiles": [
+		"C:\\UnrealProjects\\Logos\\Plugins\\LenpartyaSimulationToolkit\\Source\\LenpartyaSimulationToolkit\\LenpartyaSimulationToolkit.Build.cs",
+		"C:\\UnrealProjects\\Logos\\Plugins\\LenpartyaSimulationToolkit\\Source\\ThirdParty\\LenpartyaSimulationToolkitLibrary\\LenpartyaSimulationToolkitLibrary.Build.cs"
+	],
+	"EngineVersion": "5.6.0"
+}

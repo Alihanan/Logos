@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "LenpartyaSimulationToolkit",
+	"Description": "CUDA and other third party library setup",
+	"Category": "Other",
+	"CreatedBy": "AliBanan",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "LenpartyaSimulationToolkit",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

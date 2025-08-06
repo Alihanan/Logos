@@ -1,0 +1,29 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\unrealprojects\\logos\\plugins\\lenpartyasimulationtoolkit\\source\\lenpartyasimulationtoolkit\\private\\lenpartyasimulationtoolkit.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\unrealprojects\\logos\\intermediate\\build\\win64\\x64\\logoseditor\\debuggame\\core\\sharedpch.core.project.nonoptimized.valapi.valexpapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\unrealprojects\\logos\\plugins\\lenpartyasimulationtoolkit\\intermediate\\build\\win64\\x64\\unrealeditor\\debuggame\\lenpartyasimulationtoolkit\\definitions.lenpartyasimulationtoolkit.h",
+            "c:\\unrealprojects\\logos\\plugins\\lenpartyasimulationtoolkit\\source\\lenpartyasimulationtoolkit\\public\\lenpartyasimulationtoolkit.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\projects\\public\\interfaces\\ipluginmanager.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\projects\\public\\plugindescriptor.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\projects\\public\\custombuildsteps.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\json\\public\\serialization\\jsonwriter.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\json\\public\\serialization\\jsontypes.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\json\\public\\policies\\prettyjsonprintpolicy.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\json\\public\\policies\\jsonprintpolicy.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\projects\\public\\localizationdescriptor.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\projects\\public\\moduledescriptor.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\projects\\public\\plugindisalloweddescriptor.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\projects\\public\\pluginreferencedescriptor.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\projects\\public\\versescope.h",
+            "c:\\unrealengine\\ue_5.6\\engine\\source\\runtime\\core\\public\\containers\\versepathfwd.h",
+            "c:\\unrealprojects\\logos\\plugins\\lenpartyasimulationtoolkit\\source\\thirdparty\\lenpartyasimulationcuda\\public\\lenpartyasimulationcuda\\simplecudakernel.h",
+            "c:\\unrealprojects\\logos\\plugins\\lenpartyasimulationtoolkit\\source\\thirdparty\\lenpartyasimulationcuda\\public\\lenpartyasimulationcuda\\kernel.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
