@@ -7,6 +7,8 @@
 #include <cmath>
 #include <Net/UnrealNetwork.h>
 #include <ASphereGridController.h>
+#include "Simulation/SimulationManager.h"
+
 
 // Sets default values
 ASphereGridTile::ASphereGridTile()
@@ -28,6 +30,15 @@ ASphereGridTile::ASphereGridTile()
 	if (auto ownerChunkController = Cast<AASphereGridController>(owner))
 	{
 		this->generatorMesh = ownerChunkController->generatorMesh;
+		this->simulationManager = ownerChunkController->simManager;
+		this->simulationManager->addSubscriber(this);
+	}
+}
+ASphereGridTile::~ASphereGridTile()
+{
+	if (this->simulationManager != nullptr)
+	{
+		this->simulationManager->removeSubscriber(this);
 	}
 }
 /*
@@ -154,6 +165,9 @@ void ASphereGridTile::ExtractParametersFromOwner()
 	if (auto ownerChunkController = Cast<AASphereGridController>(owner))
 	{
 		this->generatorMesh = ownerChunkController->generatorMesh;
+		this->simulationManager = ownerChunkController->simManager;
+		this->simulationManager->addSubscriber(this);
+
 		//this->material = ownerChunkController->material;
 		this->CreateProceduralComponent();
 		this->setMaterial(ownerChunkController->material);
@@ -175,6 +189,32 @@ void ASphereGridTile::DestroyLocalComponentAndHexagon()
 	this->Destroy();
 }
 
+
+void ASphereGridTile::receiveUpdate(const SimulationData* dataState)
+{
+	if (this->tileIcosaPoint.coord.id == EIcosID::ID_EMPTY) return;
+
+	Coord3D val;
+
+	if (this->tileIcosaPoint.coord.id == EIcosID::ID_NORTH_POLE)
+	{
+		val = dataState->coordinate_3d.POLE_NORTH[4];
+	}
+	else if (this->tileIcosaPoint.coord.id == EIcosID::ID_SOUTH_POLE)
+	{
+		val = dataState->coordinate_3d.POLE_SOUTH[4];		
+	}
+	else {
+		uint32_t id_tile = (static_cast<int>(this->tileIcosaPoint.coord.id) - 1);
+		auto& valArr = dataState->coordinate_3d.TILE_SQUAD_ARRAYS[id_tile];
+		
+		// TODO precompute once
+		uint32_t id = (tileIcosaPoint.X+1) + (tileIcosaPoint.N_division - tileIcosaPoint.Y) * (tileIcosaPoint.N_division+2);
+		val = valArr[id];
+	}
+
+	this->CenterCUDAComputed = FVector(val.X, val.Y, val.Z);
+}
 
 void ASphereGridTile::parametrize(FIcosaPointCoord tileCoord)
 {

@@ -9,6 +9,7 @@
 //#include "LenpartyaSimulationToolkitLibrary/ExampleLibrary.h"
 #include "LenpartyaSimulationCUDA/SimpleCudaKernel.h"
 #include "LenpartyaSimulationCUDA/kernel.h"
+#include "LenpartyaSimulationCUDA/icosphere.h"
 
 #define LOCTEXT_NAMESPACE "FLenpartyaSimulationToolkitModule"
 

@@ -57,7 +57,11 @@ void AASphereGridController::BeginPlay()
 	this->N_divisions = pow(2, this->NUM_SUBDIVIDE);
 	//this->generatorMesh = new SphereIcosaMeshGenerator(this->RADIUS, N_divisions, );
 	this->generatorMesh = new SphereIcosaMeshGenerator(this->RADIUS, N_divisions, &(this->heightmapData), HEIGHT_ABOVE_RADIUS);
+	
 	this->chunkTrackingSystem = ChunkTrackingSystem(this);
+
+	this->simManager = new SimulationManager(this->N_divisions, this->RADIUS);
+
 
 	Super::BeginPlay();
 

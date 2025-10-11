@@ -6,22 +6,26 @@
 #include "GameFramework/Actor.h"
 #include "Geometry/SphereIcosaMeshGenerator.h"
 
+#include "Simulation/SubscriberSimulation.h"
+
 #include <cstdint>
 #include "ASphereGridTile.generated.h"
 
 class UProceduralMeshComponent;
 //class SphereIcosaMeshGenerator;
-
+class SimulationManager;
 
 UCLASS()
-class LOGOS_API ASphereGridTile : public AActor
+class LOGOS_API ASphereGridTile : public AActor, public ISubscriberSimulation
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
 	ASphereGridTile();
-	~ASphereGridTile() {}
+	~ASphereGridTile();
+
+	void receiveUpdate(const SimulationData* dataState) override;
 
 	void parametrize(FIcosaPointCoord tileCoord);
 	void setMaterial(UMaterialInterface* material);
@@ -42,7 +46,8 @@ public:
 
 	TArray<FIcosaPointCoord> releventChunkPositions;
 
-	SphereIcosaMeshGenerator* generatorMesh;
+	SphereIcosaMeshGenerator* generatorMesh = nullptr;
+	SimulationManager* simulationManager = nullptr;
 
 protected:
 	// Called when the game starts or when spawned
@@ -74,9 +79,8 @@ protected:
 	UPROPERTY(EditAnywhere, Meta = (MakeEditWidget = true))
 	TArray<FVector> Vertices;
 
-
-
-	//SphereIcosaMeshGenerator* generatorMesh;
+	UPROPERTY(EditAnywhere)
+	FVector CenterCUDAComputed = FVector(-1,-1,-1);
 
 
 public:	

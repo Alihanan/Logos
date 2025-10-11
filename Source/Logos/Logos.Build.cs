@@ -21,10 +21,14 @@ public class Logos : ModuleRules
 			"GameplayStateTreeModule",
 			"UMG",
 
-            "RHI", "RenderCore", "ReplicationGraph" // added
+            "RHI", "RenderCore", "ReplicationGraph", // added
+
+             "LenpartyaSimulationCUDA"  // our custom plugin
         });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { });
+		PrivateDependencyModuleNames.AddRange(new string[] {
+            "LenpartyaSimulationCUDA"
+        });
 
 		PublicIncludePaths.AddRange(new string[] {
 			"Logos",

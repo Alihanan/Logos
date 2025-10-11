@@ -7,7 +7,12 @@
 #include "IcoSphereReplicationGraph.generated.h"
 
 /**
+ *  Setup and gloval turn ON/OFF is taken from:
+ *  https://github.com/readyplayerme/Lyra-Sample/blob/b8474915c547d86c25476ff40ab025926e10cf10/Source/LyraGame/System/LyraReplicationGraph.cpp#L135
  * 
+ *  Tutorial used for implementation (RU)
+ *  https://www.youtube.com/watch?v=9gpvENkunY4:
+ *  
  */
 UCLASS()
 class LOGOS_API UIcoSphereReplicationGraph : public UReplicationGraph

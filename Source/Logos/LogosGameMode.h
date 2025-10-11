@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+
+
 #include "LogosGameMode.generated.h"
 
 /**
@@ -18,6 +20,8 @@ public:
 	
 	/** Constructor */
 	ALogosGameMode();
+
+	
 };
 
 

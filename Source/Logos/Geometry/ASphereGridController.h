@@ -14,7 +14,13 @@
 #include <map>
 #include <set>
 
+#include "Simulation/SimulationManager.h"
+
+
 #include "ASphereGridController.generated.h"
+
+
+
 
 UCLASS()
 class LOGOS_API AASphereGridController : public AActor
@@ -26,7 +32,7 @@ public:
 	AASphereGridController();
 
 	SphereIcosaMeshGenerator* generatorMesh;
-
+	SimulationManager* simManager;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -332,22 +338,8 @@ protected:
 	bool UpdateChunksTimerCall();
 
 
-
-
-
-	//TSet<FVector>
-
-	struct FIcosaPointCoordChunkQueue
-	{
-		//std::unordered_map<FIcosaPointCoord, ASphereGridTile*, FIcosaPointCoord::Hasher> actorTiles;
-
-		//std::unordered_map<FIcosaPointCoord, ASphereGridTile*, FIcosaPointCoord::Hasher> activeChunks;
-
-		//std::queue<FIcosaPointCoord> key;
-
-		//std::vector<FIcosaPointCoord> key;
-	};
-
+	
+	
 
 
 	double totalTime = 0.0;

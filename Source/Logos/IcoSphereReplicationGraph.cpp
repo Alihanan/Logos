@@ -13,6 +13,12 @@ UIcoSphereReplicationGraph::UIcoSphereReplicationGraph()
 		UReplicationDriver::CreateReplicationDriverDelegate().BindLambda(
 			[](UNetDriver* ForNetDriver, const FURL& URL, UWorld* World) -> UReplicationDriver*
 			{
+				/*
+				TODO: remove after you finalize Replication Graph
+				*/
+				UE_LOG(LogTemp, Warning, TEXT("DEBUG! Using default Replication Graph for now...!"));
+				return nullptr;
+				/*
 				// Only create for GameNetDriver
 				if (World && ForNetDriver && ForNetDriver->NetDriverName == NAME_GameNetDriver)
 				{
@@ -21,6 +27,7 @@ UIcoSphereReplicationGraph::UIcoSphereReplicationGraph()
 				}
 				UE_LOG(LogTemp, Warning, TEXT("Error! Using default Replication Graph!"));
 				return nullptr;
+				*/
 			});
 	}
 
