@@ -19,7 +19,7 @@ public class LenpartyaSimulationCUDA : ModuleRules
 			PublicDelayLoadDLLs.Add("LenpartyaSimulationCUDA.dll");
 
 			// Ensure that the DLL is staged along with the executable
-			RuntimeDependencies.Add("$(PluginDir)/Binaries/ThirdParty/LenpartyaSimulationCUDA/Win64/LenpartyaSimulationCUDA.dll");
+			RuntimeDependencies.Add("$(PluginDir)/Binaries/Win64/LenpartyaSimulationCUDA.dll");
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
@@ -28,7 +28,7 @@ public class LenpartyaSimulationCUDA : ModuleRules
 		}
 		else if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
-			string ExampleSoPath = Path.Combine("$(PluginDir)", "Binaries", "ThirdParty", "LenpartyaSimulationCUDA", "Linux", "x86_64-unknown-linux-gnu", "libLenpartyaSimulationCUDA.so");
+			string ExampleSoPath = Path.Combine("$(PluginDir)", "Binaries", "Linux", "x86_64-unknown-linux-gnu", "libLenpartyaSimulationCUDA.so");
 			PublicAdditionalLibraries.Add(ExampleSoPath);
 			PublicDelayLoadDLLs.Add(ExampleSoPath);
 			RuntimeDependencies.Add(ExampleSoPath);

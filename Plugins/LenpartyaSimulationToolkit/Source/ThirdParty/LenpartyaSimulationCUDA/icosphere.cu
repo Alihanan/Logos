@@ -24,7 +24,7 @@ LENPARTYACUDA_EXPORT void compute_3d_coordinate(SimulationData* data)
 	dim3 threads(1,1);
 
 	
-	kernel_compute_3d_coordinate <<< blocks, threads >>> ();
+	//kernel_compute_3d_coordinate <<< blocks, threads >>> ();
 	//return 0;
 }
 

@@ -24,11 +24,11 @@ void FLenpartyaSimulationToolkitModule::StartupModule()
 	FString LibraryPath;
 
 #if PLATFORM_WINDOWS
-	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/LenpartyaSimulationCUDA/Win64/LenpartyaSimulationCUDA.dll"));
+	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/Win64/LenpartyaSimulationCUDA.dll"));
 #elif PLATFORM_MAC
-	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/ThirdParty/LenpartyaSimulationCUDA/Mac/Release/libExampleLibrary.dylib"));
+	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Source/Mac/Release/libExampleLibrary.dylib"));
 #elif PLATFORM_LINUX
-	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/ThirdParty/LenpartyaSimulationCUDA/Linux/x86_64-unknown-linux-gnu/libExampleLibrary.so"));
+	LibraryPath = FPaths::Combine(*BaseDir, TEXT("Binaries/Linux/x86_64-unknown-linux-gnu/libExampleLibrary.so"));
 #endif // PLATFORM_WINDOWS
 
 	CUDAHandle = !LibraryPath.IsEmpty() ? FPlatformProcess::GetDllHandle(*LibraryPath) : nullptr;

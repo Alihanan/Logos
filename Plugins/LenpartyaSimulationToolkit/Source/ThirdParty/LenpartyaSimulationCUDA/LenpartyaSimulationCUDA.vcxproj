@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -14,6 +14,8 @@
     <ProjectGuid>{1153B340-DA7E-B02B-CEBB-36E1CABB5093}</ProjectGuid>
     <RootNamespace>LenpartyaSimulationCUDA</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <CudaToolkitCustomDir>
+    </CudaToolkitCustomDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -42,6 +44,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Plugins\LenpartyaLibrary\Source\ThirdParty\LenpartyaLibraryLibrary\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
@@ -60,6 +63,9 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <PostBuildEvent>
+      <Command>for %%X in (dll lib) do copy "$(TargetDir)$(TargetName).%%X" "..\..\..\Binaries\ThirdParty\LenpartyaLibraryLibrary\Win64\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -78,16 +84,20 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CompileOut>$(CudaIntDirFullPath)\%(Filename)%(Extension).obj</CompileOut>
+      <KeepDir>$(CudaIntDir)</KeepDir>
     </CudaCompile>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "..\..\..\Binaries\ThirdParty\LenpartyaSimulationCUDA\Win64\"</Command>
+      <Command>for %%X in (dll lib) do copy "$(TargetDir)$(TargetName).%%X" "$(SolutionDir)Plugins\LenpartyaSimulationToolkit\Binaries\Win64"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="icosphere.cu" />
     <CudaCompile Include="kernel.cu" />
     <CudaCompile Include="SimpleCudaKernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Public\LenpartyaSimulationCUDA\icosphere.h" />
     <ClInclude Include="Public\LenpartyaSimulationCUDA\kernel.h" />
     <ClInclude Include="Public\LenpartyaSimulationCUDA\SimpleCudaKernel.h" />
   </ItemGroup>
