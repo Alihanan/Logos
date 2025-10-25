@@ -8,7 +8,10 @@ public class Logos : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		//Target.bUseUnityBuild = false;
+        //Target.bUseUnityBuild = false;
+
+        PublicDefinitions.Add("NOMINMAX");
+
 
         PublicDependencyModuleNames.AddRange(new string[] {
 			"Core",
